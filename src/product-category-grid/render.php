@@ -38,10 +38,11 @@ $name_color     = mavida_core_sanitize_css_color( $attributes['nameColor'] ?? ''
 $name_font_size = isset( $attributes['nameFontSize'] ) ? max( 0, (int) $attributes['nameFontSize'] ) : 16;
 $name_style     = sprintf( 'font-size:%dpx;', $name_font_size ) . ( '' !== $name_color ? sprintf( 'color:%s;', $name_color ) : '' );
 
-// Call to action opzionale sotto la griglia: testo libero, url, dimensione, colori e
-// stile "pulsante". Se il testo e' vuoto, la CTA non viene renderizzata affatto.
+// Call to action opzionale dentro ogni card: testo libero, dimensione, colori e stile
+// "pulsante". Non ha un link proprio: essendo dentro la card, eredita il click dell'intera
+// card (il link della categoria) invece di puntare a un URL esterno indicabile a parte.
+// Se il testo e' vuoto, la CTA non viene renderizzata affatto.
 $cta_text = isset( $attributes['ctaText'] ) ? trim( wp_strip_all_tags( (string) $attributes['ctaText'] ) ) : '';
-$cta_url  = isset( $attributes['ctaUrl'] ) ? esc_url_raw( (string) $attributes['ctaUrl'] ) : '';
 
 if ( '' !== $cta_text ) {
 	$cta_is_button        = ! empty( $attributes['ctaIsButton'] );
@@ -87,7 +88,6 @@ if ( $cache_minutes > 0 ) {
 		$name_color,
 		$name_font_size,
 		$cta_text,
-		$cta_url,
 		$cta_is_button,
 		$cta_font_size,
 		$cta_text_color,
@@ -143,20 +143,14 @@ ob_start();
 				);
 				?>
 				<?php echo mavida_core_get_category_image_html( $category ); ?>
+				<?php if ( '' !== $cta_text ) : ?>
+					<span class="<?php echo esc_attr( $cta_classes ); ?>" style="<?php echo esc_attr( $cta_style ); ?>">
+						<?php echo esc_html( $cta_text ); ?>
+					</span>
+				<?php endif; ?>
 			</a>
 		<?php endforeach; ?>
 	</div>
-	<?php if ( '' !== $cta_text ) : ?>
-		<?php if ( '' !== $cta_url ) : ?>
-			<a class="<?php echo esc_attr( $cta_classes ); ?>" href="<?php echo esc_url( $cta_url ); ?>" style="<?php echo esc_attr( $cta_style ); ?>">
-				<?php echo esc_html( $cta_text ); ?>
-			</a>
-		<?php else : ?>
-			<span class="<?php echo esc_attr( $cta_classes ); ?>" style="<?php echo esc_attr( $cta_style ); ?>">
-				<?php echo esc_html( $cta_text ); ?>
-			</span>
-		<?php endif; ?>
-	<?php endif; ?>
 </div>
 <?php
 $html = ob_get_clean();

@@ -2,11 +2,11 @@
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
   "name": "mavida-core/product-category-grid",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "title": "Griglia categorie prodotto",
   "category": "woocommerce",
   "icon": "grid-view",
-  "description": "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne, esclusioni, aspetto card e call to action configurabili.",
+  "description": "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne, esclusioni, aspetto card e call to action per card configurabili.",
   "keywords": [
     "woocommerce",
     "categorie",
@@ -62,10 +62,6 @@
       "default": 16
     },
     "ctaText": {
-      "type": "string",
-      "default": ""
-    },
-    "ctaUrl": {
       "type": "string",
       "default": ""
     },

@@ -1,6 +1,6 @@
 {
 	"name": "mavida-core",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"description": "Blocco Gutenberg griglia categorie prodotto per il plugin Mavida Core.",
 	"private": true,
 	"license": "GPL-2.0-or-later",

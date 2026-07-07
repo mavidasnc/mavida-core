@@ -44,7 +44,6 @@ export default function Edit( { attributes, setAttributes } ) {
 		nameColor,
 		nameFontSize,
 		ctaText,
-		ctaUrl,
 		ctaIsButton,
 		ctaTextColor,
 		ctaBackgroundColor,
@@ -206,16 +205,10 @@ export default function Edit( { attributes, setAttributes } ) {
 				<PanelBody title={ __( 'Call to action', 'mavida-core' ) } initialOpen={ false }>
 					<TextControl
 						label={ __( 'Testo (vuoto = nessuna CTA)', 'mavida-core' ) }
+						help={ __( 'Comparirà dentro ogni card categoria, senza link proprio: il click resta quello dell\'intera card.', 'mavida-core' ) }
 						value={ ctaText }
 						onChange={ ( value ) => setAttributes( { ctaText: value } ) }
-						placeholder={ __( 'Es. Visualizza tutti i prodotti', 'mavida-core' ) }
-					/>
-					<TextControl
-						type="url"
-						label={ __( 'URL', 'mavida-core' ) }
-						value={ ctaUrl }
-						onChange={ ( value ) => setAttributes( { ctaUrl: value } ) }
-						placeholder="https://"
+						placeholder={ __( 'Es. Vedi prodotti', 'mavida-core' ) }
 					/>
 					<ToggleControl
 						label={ __( 'Mostra come pulsante', 'mavida-core' ) }

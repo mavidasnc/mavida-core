@@ -3,8 +3,8 @@ Contributors: mavida
 Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
-Requires PHP: 7.4
-Stable tag: 1.4.0
+Requires PHP: 8.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,12 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.5.0 =
+* Requisito minimo PHP alzato a 8.1 (verificato: nessuna sintassi 8.x gia' in uso).
+* La call to action del blocco ora e' dentro ogni card, senza campo URL: eredita il link della card.
+* Due nuove colonne, "Codice Marelli" e "Codice OE", nell'elenco prodotti di Bacheca.
+* Link diretto "Impostazioni" nella riga del plugin in Bacheca > Plugin.
 
 = 1.4.0 =
 * Tag HTML del nome categoria configurabile (H1-H4, div, span), con colore e dimensione testo.

@@ -30,6 +30,28 @@ if ( ! function_exists( 'mavida_core_add_settings_page' ) ) {
 }
 add_action( 'admin_menu', 'mavida_core_add_settings_page' );
 
+if ( ! function_exists( 'mavida_core_add_settings_link' ) ) {
+	/**
+	 * Aggiunge un link diretto alla pagina opzioni nella riga del plugin, in Bacheca > Plugin
+	 * (visibile solo a plugin attivo: se non lo fosse, questo file non verrebbe caricato).
+	 *
+	 * @param array $links Link gia' presenti nella riga del plugin.
+	 * @return array
+	 */
+	function mavida_core_add_settings_link( $links ) {
+		$settings_link = sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( admin_url( 'admin.php?page=mavida-core' ) ),
+			esc_html__( 'Impostazioni', 'mavida-core' )
+		);
+
+		array_unshift( $links, $settings_link );
+
+		return $links;
+	}
+}
+add_filter( 'plugin_action_links_' . plugin_basename( MAVIDA_CORE_FILE ), 'mavida_core_add_settings_link' );
+
 if ( ! function_exists( 'mavida_core_register_settings' ) ) {
 	/**
 	 * Registra l'opzione tramite la Settings API, con relativa sezione e campo.

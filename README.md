@@ -10,8 +10,11 @@ Plugin WordPress con funzionalita' core per siti WooCommerce basati su [Blocksy]
   colonne, categorie da escludere (con lo stesso componente nativo di WordPress usato per i tag),
   durata della cache, colore di sfondo delle card e arrotondamento degli angoli configurabili dal
   pannello del blocco; le card hanno una piccola animazione al passaggio del mouse. Il tag HTML del
-  nome categoria (H1-H4, div, span), colore e dimensione sono configurabili. Sotto la griglia si puo'
-  aggiungere una call to action opzionale (testo libero, url, dimensione, colori, stile pulsante).
+  nome categoria (H1-H4, div, span), colore e dimensione sono configurabili. Ogni card puo' mostrare
+  una call to action opzionale (testo libero, dimensione, colori, stile pulsante); non ha un link
+  proprio, eredita il click dell'intera card.
+- **Colonne prodotto in Bacheca**: l'elenco prodotti (Prodotti) mostra due colonne aggiuntive,
+  "Codice Marelli" e "Codice OE", lette dai relativi meta del prodotto.
 - **Cache del blocco**: il markup del blocco viene salvato in transient per il numero di minuti
   impostato nel pannello (0 per disattivarla), con un pulsante "Svuota cache" che la invalida.
 - **Menu dinamico**: le categorie prodotto vengono aggiunte automaticamente come sottovoci di una voce
@@ -45,7 +48,7 @@ npm run build   # build di produzione (aggiorna build/)
 ## Requisiti
 
 - WordPress 6.5+
-- PHP 7.4+
+- PHP 8.1+
 - WooCommerce (per le funzionalita' legate alle categorie prodotto)
 - Tema Blocksy (per la gestione dell'immagine di categoria)
 

@@ -3,9 +3,9 @@
  * Plugin Name:       Mavida Core
  * Plugin URI:        https://github.com/mavidasnc/mavida-core
  * Description:       Funzionalita' core Mavida per WooCommerce/Blocksy: blocco griglia categorie, menu dinamico, opzioni.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 6.5
- * Requires PHP:      7.4
+ * Requires PHP:      8.1
  * Author:            MAVIDA
  * Author URI:        https://mavida.com
  * License:           GPL v2 or later
@@ -21,11 +21,12 @@
 defined( 'ABSPATH' ) || exit;
 
 // Costanti di base del plugin, usate da tutti i file inclusi.
-// La versione viene letta direttamente dall'header qui sopra (unica fonte di verita'):
-// duplicarla in una stringa a parte aveva gia' causato un disallineamento che faceva
-// segnalare un aggiornamento disponibile anche a plugin gia' aggiornato.
-$mavida_core_plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+// Versione e requisito PHP vengono lette direttamente dall'header qui sopra (unica fonte
+// di verita'): duplicarle in una stringa a parte aveva gia' causato un disallineamento
+// che faceva segnalare un aggiornamento disponibile anche a plugin gia' aggiornato.
+$mavida_core_plugin_data = get_file_data( __FILE__, array( 'Version' => 'Version', 'RequiresPHP' => 'Requires PHP' ) );
 define( 'MAVIDA_CORE_VERSION', $mavida_core_plugin_data['Version'] );
+define( 'MAVIDA_CORE_REQUIRES_PHP', $mavida_core_plugin_data['RequiresPHP'] );
 define( 'MAVIDA_CORE_FILE', __FILE__ );
 define( 'MAVIDA_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MAVIDA_CORE_URL', plugin_dir_url( __FILE__ ) );

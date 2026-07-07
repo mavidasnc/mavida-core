@@ -171,7 +171,7 @@ if ( ! function_exists( 'mavida_core_updater_inject_update' ) ) {
 		$update->package      = $release['download_url'];
 		$update->url          = $release['html_url'];
 		$update->tested       = '';
-		$update->requires_php = '7.4';
+		$update->requires_php = MAVIDA_CORE_REQUIRES_PHP;
 
 		$transient->response[ $basename ] = $update;
 

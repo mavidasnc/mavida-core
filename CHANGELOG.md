@@ -5,6 +5,26 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.5.0] - 2026-07-07
+
+### Changed
+- **Requisito minimo PHP alzato a 8.1** (da 7.4). Verificato che il codice non usa gia' sintassi
+  successiva alla 7.4: si tratta di un innalzamento del requisito dichiarato, non di una modifica
+  funzionale. Il valore usato dall'updater per la scheda "Visualizza dettagli" ora viene letto
+  dall'header del plugin invece di essere duplicato a mano (stesso principio gia' applicato alla
+  versione in 1.3.0, per evitare lo stesso tipo di disallineamento).
+- La call to action del blocco "Griglia categorie prodotto" non ha piu' un campo URL: e' ora
+  renderizzata dentro ogni card (non piu' come elemento unico sotto la griglia) e non ha un link
+  proprio, ereditando il click dell'intera card verso l'archivio della categoria.
+
+### Added
+- Due nuove colonne, "Codice Marelli" e "Codice OE", nell'elenco prodotti di Bacheca
+  (`edit.php?post_type=product`), lette dai meta prodotto omonimi.
+- Link diretto "Impostazioni" nella riga del plugin in Bacheca > Plugin, verso la pagina
+  opzioni "Mavida Core".
+
+[1.5.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.5.0
+
 ## [1.4.0] - 2026-07-07
 
 ### Added
