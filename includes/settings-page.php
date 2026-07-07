@@ -146,6 +146,7 @@ if ( ! function_exists( 'mavida_core_enqueue_admin_assets' ) ) {
 				'i18n'    => array(
 					'checkingUpdate'  => __( 'Controllo aggiornamenti in corso…', 'mavida-core' ),
 					'upToDate'        => __( 'Il plugin è già aggiornato all\'ultima versione.', 'mavida-core' ),
+					/* translators: %s: numero della versione disponibile, es. "1.4.0". */
 					'updateAvailable' => __( 'È disponibile una nuova versione: %s', 'mavida-core' ),
 					'errorCheck'      => __( 'Impossibile controllare gli aggiornamenti. Riprova più tardi.', 'mavida-core' ),
 				),

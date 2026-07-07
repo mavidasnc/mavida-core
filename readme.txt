@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,9 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.3.1 =
+* Aggiunto il file di traduzione languages/mavida-core.pot (45 stringhe estratte) e ripristinato l'header Domain Path.
 
 = 1.3.0 =
 * Corretto un bug per cui il plugin segnalava un aggiornamento disponibile anche quando era già alla versione più recente (costante di versione disallineata dall'header).

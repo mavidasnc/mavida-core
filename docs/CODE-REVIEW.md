@@ -92,15 +92,15 @@ nel pannello al posto della select vuota e silenziosa.
 Sotto i 782px il CSS ora usa `repeat( min( var( --mv-columns, 4 ), 2 ), minmax( 0, 1fr ) )`: con
 `columns = 1` scelto in editor, il mobile mostra 1 colonna invece di forzarne comunque 2.
 
-## 5. ~~`Domain Path` punta a una cartella `languages/` inesistente~~ — Risolto in 1.3.0
+## 5. ~~`Domain Path` punta a una cartella `languages/` inesistente~~ — Risolto in 1.3.1
 
-**File:** `mavida-core.php`
+**File:** `mavida-core.php`, `languages/mavida-core.pot`
 
-La riga `Domain Path: /languages` è stata rimossa dall'header, non essendoci ancora una cartella
-`languages/` reale con traduzioni estratte (l'estrazione richiede WP-CLI, non disponibile in
-questo ambiente di sviluppo). Da ripristinare quando si predisporrà un vero `.pot`.
-`load_plugin_textdomain()` resta comunque attivo e continuerà a funzionare non appena la cartella
-sarà aggiunta, indipendentemente dall'header.
+In 1.3.0 la riga `Domain Path: /languages` era stata rimossa in assenza di una cartella
+`languages/` reale (l'estrazione richiede WP-CLI, non disponibile nell'ambiente di sviluppo usato
+per la 1.3.0). In 1.3.1 WP-CLI è stato reperito e `wp i18n make-pot` ha generato
+`languages/mavida-core.pot` (45 stringhe estratte da PHP, JS e `block.json`); l'header `Domain
+Path` è stato ripristinato.
 
 ## 6. ~~Valore di default duplicato in tre punti~~ — Risolto in 1.3.0
 

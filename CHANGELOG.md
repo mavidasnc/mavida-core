@@ -5,6 +5,19 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.3.1] - 2026-07-07
+
+### Added
+- File di traduzione `languages/mavida-core.pot` (45 stringhe estratte da PHP, JS e block.json
+  con WP-CLI `wp i18n make-pot`), e ripristinato l'header `Domain Path: /languages` che nella
+  1.3.0 era stato rimosso in assenza di un vero file di traduzione.
+
+### Fixed
+- Aggiunto il commento `translators:` mancante per il placeholder `%s` nella stringa "È disponibile
+  una nuova versione: %s".
+
+[1.3.1]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.3.1
+
 ## [1.3.0] - 2026-07-07
 
 ### Fixed

@@ -1,0 +1,207 @@
+# Copyright (C) 2026 MAVIDA
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Mavida Core 1.3.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mavida-core\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-07T13:17:33+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: mavida-core\n"
+
+#. Plugin Name of the plugin
+#: mavida-core.php
+#: includes/settings-page.php:22
+#: includes/settings-page.php:23
+#: includes/settings-page.php:176
+msgid "Mavida Core"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: mavida-core.php
+msgid "https://github.com/mavidasnc/mavida-core"
+msgstr ""
+
+#. Description of the plugin
+#: mavida-core.php
+msgid "Funzionalita' core Mavida per WooCommerce/Blocksy: blocco griglia categorie, menu dinamico, opzioni."
+msgstr ""
+
+#. Author of the plugin
+#: mavida-core.php
+msgid "MAVIDA"
+msgstr ""
+
+#. Author URI of the plugin
+#: mavida-core.php
+msgid "https://mavida.com"
+msgstr ""
+
+#: includes/menu-injection.php:87
+msgid "Categoria prodotto"
+msgstr ""
+
+#: includes/settings-page.php:50
+msgid "Menu dinamico categorie"
+msgstr ""
+
+#: includes/settings-page.php:52
+msgid "Assegna questa classe CSS a una voce di menu (Aspetto > Menu > opzioni schermata > classi CSS): le categorie prodotto verranno mostrate automaticamente come suoi sottomenu."
+msgstr ""
+
+#: includes/settings-page.php:59
+msgid "Classe CSS voce di menu"
+msgstr ""
+
+#: includes/settings-page.php:115
+msgid "Generale"
+msgstr ""
+
+#: includes/settings-page.php:116
+msgid "Aggiornamenti"
+msgstr ""
+
+#: includes/settings-page.php:147
+msgid "Controllo aggiornamenti in corso…"
+msgstr ""
+
+#: includes/settings-page.php:148
+msgid "Il plugin è già aggiornato all'ultima versione."
+msgstr ""
+
+#. translators: %s: numero della versione disponibile, es. "1.4.0".
+#: includes/settings-page.php:150
+#, php-format
+msgid "È disponibile una nuova versione: %s"
+msgstr ""
+
+#: includes/settings-page.php:151
+msgid "Impossibile controllare gli aggiornamenti. Riprova più tardi."
+msgstr ""
+
+#: includes/settings-page.php:215
+msgid "Questo plugin si aggiorna direttamente dalle release GitHub. Usa il pulsante qui sotto per controllare una nuova versione su richiesta; WordPress controlla comunque automaticamente in background."
+msgstr ""
+
+#: includes/settings-page.php:221
+msgid "Versione installata"
+msgstr ""
+
+#: includes/settings-page.php:225
+msgid "Ultima versione"
+msgstr ""
+
+#: includes/settings-page.php:229
+msgid "Repository"
+msgstr ""
+
+#: includes/settings-page.php:239
+msgid "Controlla aggiornamenti"
+msgstr ""
+
+#: includes/updater.php:265
+msgid "Impossibile rinominare la cartella del pacchetto di aggiornamento."
+msgstr ""
+
+#: includes/updater.php:294
+msgid "Permessi insufficienti."
+msgstr ""
+
+#: includes/updater.php:300
+msgid "Impossibile contattare GitHub. Riprova più tardi."
+msgstr ""
+
+#: src/product-category-grid/edit.js:30
+msgid "Cache svuotata."
+msgstr ""
+
+#: src/product-category-grid/edit.js:33
+msgid "Impossibile svuotare la cache. Riprova."
+msgstr ""
+
+#: src/product-category-grid/edit.js:89
+msgid "Impostazioni griglia"
+msgstr ""
+
+#: src/product-category-grid/edit.js:91
+msgid "Numero di colonne"
+msgstr ""
+
+#: src/product-category-grid/edit.js:102
+msgid "Impossibile caricare l'elenco delle categorie. Ricarica la pagina per riprovare."
+msgstr ""
+
+#: src/product-category-grid/edit.js:109
+msgid "Categorie da escludere"
+msgstr ""
+
+#: src/product-category-grid/edit.js:110
+msgid "Tieni premuto Ctrl (Cmd su Mac) per selezionare piu' categorie."
+msgstr ""
+
+#: src/product-category-grid/edit.js:119
+msgid "Aspetto card"
+msgstr ""
+
+#: src/product-category-grid/edit.js:125
+msgid "Colore sfondo card"
+msgstr ""
+
+#: src/product-category-grid/edit.js:130
+msgid "Arrotondamento angoli (px)"
+msgstr ""
+
+#: src/product-category-grid/edit.js:138
+msgid "Cache"
+msgstr ""
+
+#: src/product-category-grid/edit.js:142
+msgid "Durata cache (minuti)"
+msgstr ""
+
+#: src/product-category-grid/edit.js:143
+msgid "Il markup della griglia viene salvato in cache per il numero di minuti indicato. Imposta 0 per disattivare la cache."
+msgstr ""
+
+#: src/product-category-grid/edit.js:154
+msgid "Svuota cache"
+msgstr ""
+
+#: src/product-category-grid/edit.js:157
+msgid "Svuota la cache di tutte le griglie categorie del sito, non solo di questo blocco."
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block title"
+msgid "Griglia categorie prodotto"
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block description"
+msgid "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne, esclusioni, colore sfondo card e arrotondamento angoli configurabili."
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block keyword"
+msgid "woocommerce"
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block keyword"
+msgid "categorie"
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block keyword"
+msgid "prodotti"
+msgstr ""
+
+#: src/product-category-grid/block.json
+msgctxt "block keyword"
+msgid "griglia"
+msgstr ""
