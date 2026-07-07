@@ -7,9 +7,11 @@ Plugin WordPress con funzionalita' core per siti WooCommerce basati su [Blocksy]
 - **Blocco Gutenberg "Griglia categorie prodotto"** (`mavida-core/product-category-grid`): mostra le
   categorie prodotto WooCommerce in griglia (solo se WooCommerce e' attivo), con il nome in alto e
   l'immagine di categoria (gestita da Blocksy tramite il term meta `thumbnail_id`) sotto. Numero di
-  colonne, elenco di categorie da escludere, durata della cache, colore di sfondo delle card e
-  arrotondamento degli angoli configurabili dal pannello del blocco; le card hanno una piccola
-  animazione al passaggio del mouse (sollevamento + ombra).
+  colonne, categorie da escludere (con lo stesso componente nativo di WordPress usato per i tag),
+  durata della cache, colore di sfondo delle card e arrotondamento degli angoli configurabili dal
+  pannello del blocco; le card hanno una piccola animazione al passaggio del mouse. Il tag HTML del
+  nome categoria (H1-H4, div, span), colore e dimensione sono configurabili. Sotto la griglia si puo'
+  aggiungere una call to action opzionale (testo libero, url, dimensione, colori, stile pulsante).
 - **Cache del blocco**: il markup del blocco viene salvato in transient per il numero di minuti
   impostato nel pannello (0 per disattivarla), con un pulsante "Svuota cache" che la invalida.
 - **Menu dinamico**: le categorie prodotto vengono aggiunte automaticamente come sottovoci di una voce

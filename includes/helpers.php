@@ -102,3 +102,22 @@ if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
 		return '';
 	}
 }
+
+if ( ! function_exists( 'mavida_core_sanitize_css_color' ) ) {
+	/**
+	 * Ripulisce un valore colore proveniente da un attributo del blocco (color picker),
+	 * prima di usarlo dentro un attributo "style" inline. Non valida che sia un colore CSS
+	 * corretto, ma rimuove i caratteri (";", ":", ecc.) che permetterebbero di iniettare
+	 * ulteriori dichiarazioni CSS, mantenendo i formati leciti (#hex, rgb()/rgba(),
+	 * hsl()/hsla(), nomi colore, var(--...)).
+	 *
+	 * @param mixed  $value   Valore grezzo dell'attributo.
+	 * @param string $default Valore di fallback se il risultato e' vuoto.
+	 * @return string Colore ripulito, oppure il fallback.
+	 */
+	function mavida_core_sanitize_css_color( $value, $default = '' ) {
+		$value = preg_replace( '/[^a-zA-Z0-9#(),.%\- ]/', '', (string) $value );
+
+		return '' !== $value ? $value : $default;
+	}
+}

@@ -5,6 +5,26 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.4.0] - 2026-07-07
+
+### Added
+- Tag HTML del nome categoria configurabile dal pannello del blocco (H1, H2, H3, H4, div, span),
+  con colore e dimensione testo. Il tag e' validato server-side contro un elenco chiuso, per
+  sicurezza (non e' possibile iniettare un tag arbitrario tramite l'attributo del blocco).
+- Nuovo campo "Call to action" (es. "Visualizza tutti i prodotti") sotto la griglia: testo
+  libero, URL, dimensione testo, colore testo, opzione "mostra come pulsante" con relativo
+  colore di sfondo. Se il testo e' vuoto, la CTA non viene renderizzata.
+
+### Changed
+- La select delle categorie da escludere usa ora `FormTokenField`, lo stesso componente che
+  WordPress usa nativamente per il pannello "Tag" nella barra laterale dell'editor (chip con
+  ricerca), al posto della `<select multiple>` nativa.
+- Estratta la sanitizzazione dei valori colore CSS (gia' usata per lo sfondo delle card) in un
+  helper condiviso (`mavida_core_sanitize_css_color()`), ora riusato anche per i colori di nome
+  categoria e CTA.
+
+[1.4.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.4.0
+
 ## [1.3.1] - 2026-07-07
 
 ### Added

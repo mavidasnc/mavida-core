@@ -6,14 +6,50 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { useBlockProps, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, SelectControl, TextControl, Button, Notice, Spinner } from '@wordpress/components';
+import {
+	PanelBody,
+	RangeControl,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+	FormTokenField,
+	Button,
+	Notice,
+	Spinner,
+} from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import apiFetch from '@wordpress/api-fetch';
 
 import './editor.scss';
 
+// Tag HTML disponibili per il nome della categoria: stesso elenco validato lato server
+// (vedi allowed_name_tags in render.php).
+const NAME_TAG_OPTIONS = [
+	{ label: 'H1', value: 'h1' },
+	{ label: 'H2', value: 'h2' },
+	{ label: 'H3', value: 'h3' },
+	{ label: 'H4', value: 'h4' },
+	{ label: 'Div', value: 'div' },
+	{ label: 'Span', value: 'span' },
+];
+
 export default function Edit( { attributes, setAttributes } ) {
-	const { columns, excludedCategories, cacheMinutes, cardBackgroundColor, cardBorderRadius } = attributes;
+	const {
+		columns,
+		excludedCategories,
+		cacheMinutes,
+		cardBackgroundColor,
+		cardBorderRadius,
+		nameTagName,
+		nameColor,
+		nameFontSize,
+		ctaText,
+		ctaUrl,
+		ctaIsButton,
+		ctaTextColor,
+		ctaBackgroundColor,
+		ctaFontSize,
+	} = attributes;
 	const blockProps = useBlockProps();
 
 	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco
@@ -72,16 +108,22 @@ export default function Edit( { attributes, setAttributes } ) {
 		};
 	}, [] );
 
-	// SelectControl nativa "multiple": i value sono sempre stringhe, vanno
-	// riconvertiti a number per restare coerenti con l'attributo excludedCategories.
-	function onChangeExcludedCategories( values ) {
-		setAttributes( { excludedCategories: values.map( Number ) } );
-	}
+	// FormTokenField (lo stesso componente usato nativamente da WordPress per il pannello
+	// "Tag" nella barra laterale) lavora con token di testo, non con ID: serve una mappa
+	// bidirezionale nome<->id per tradurre da/verso l'attributo excludedCategories (array di ID).
+	const excludedCategoryNames = excludedCategories
+		.map( ( id ) => categories.find( ( category ) => category.id === id )?.name )
+		.filter( Boolean );
 
-	const categoryOptions = categories.map( ( category ) => ( {
-		label: `${ category.name } (${ category.count })`,
-		value: String( category.id ),
-	} ) );
+	function onChangeExcludedCategories( tokens ) {
+		const ids = tokens
+			.map( ( token ) => categories.find( ( category ) => category.name === token )?.id )
+			// Ignora eventuali token digitati liberamente che non corrispondono a nessuna
+			// categoria esistente: la select deve restare vincolata alle categorie reali.
+			.filter( ( id ) => typeof id === 'number' );
+
+		setAttributes( { excludedCategories: ids } );
+	}
 
 	return (
 		<>
@@ -104,13 +146,12 @@ export default function Edit( { attributes, setAttributes } ) {
 					) }
 
 					{ ! isLoadingCategories && ! categoriesError && (
-						<SelectControl
-							multiple
+						<FormTokenField
 							label={ __( 'Categorie da escludere', 'mavida-core' ) }
-							help={ __( 'Tieni premuto Ctrl (Cmd su Mac) per selezionare piu\' categorie.', 'mavida-core' ) }
-							value={ excludedCategories.map( String ) }
-							options={ categoryOptions }
+							value={ excludedCategoryNames }
+							suggestions={ categories.map( ( category ) => category.name ) }
 							onChange={ onChangeExcludedCategories }
+							__experimentalExpandOnFocus
 						/>
 					) }
 				</PanelBody>
@@ -134,6 +175,82 @@ export default function Edit( { attributes, setAttributes } ) {
 						max={ 40 }
 					/>
 				</PanelColorSettings>
+
+				<PanelColorSettings
+					title={ __( 'Testo categoria', 'mavida-core' ) }
+					initialOpen={ false }
+					colorSettings={ [
+						{
+							value: nameColor,
+							onChange: ( value ) => setAttributes( { nameColor: value || '' } ),
+							label: __( 'Colore testo', 'mavida-core' ),
+						},
+					] }
+				>
+					<SelectControl
+						label={ __( 'Tag HTML', 'mavida-core' ) }
+						help={ __( 'Il tag usato per il nome della categoria (es. H2 se la griglia è il titolo principale della sezione).', 'mavida-core' ) }
+						value={ nameTagName }
+						options={ NAME_TAG_OPTIONS }
+						onChange={ ( value ) => setAttributes( { nameTagName: value } ) }
+					/>
+					<RangeControl
+						label={ __( 'Dimensione testo (px)', 'mavida-core' ) }
+						value={ nameFontSize }
+						onChange={ ( value ) => setAttributes( { nameFontSize: value } ) }
+						min={ 10 }
+						max={ 60 }
+					/>
+				</PanelColorSettings>
+
+				<PanelBody title={ __( 'Call to action', 'mavida-core' ) } initialOpen={ false }>
+					<TextControl
+						label={ __( 'Testo (vuoto = nessuna CTA)', 'mavida-core' ) }
+						value={ ctaText }
+						onChange={ ( value ) => setAttributes( { ctaText: value } ) }
+						placeholder={ __( 'Es. Visualizza tutti i prodotti', 'mavida-core' ) }
+					/>
+					<TextControl
+						type="url"
+						label={ __( 'URL', 'mavida-core' ) }
+						value={ ctaUrl }
+						onChange={ ( value ) => setAttributes( { ctaUrl: value } ) }
+						placeholder="https://"
+					/>
+					<ToggleControl
+						label={ __( 'Mostra come pulsante', 'mavida-core' ) }
+						checked={ ctaIsButton }
+						onChange={ ( value ) => setAttributes( { ctaIsButton: value } ) }
+					/>
+					<RangeControl
+						label={ __( 'Dimensione testo (px)', 'mavida-core' ) }
+						value={ ctaFontSize }
+						onChange={ ( value ) => setAttributes( { ctaFontSize: value } ) }
+						min={ 10 }
+						max={ 40 }
+					/>
+				</PanelBody>
+
+				<PanelColorSettings
+					title={ __( 'Colori CTA', 'mavida-core' ) }
+					initialOpen={ false }
+					colorSettings={ [
+						{
+							value: ctaTextColor,
+							onChange: ( value ) => setAttributes( { ctaTextColor: value || '' } ),
+							label: __( 'Colore testo', 'mavida-core' ),
+						},
+						...( ctaIsButton
+							? [
+									{
+										value: ctaBackgroundColor,
+										onChange: ( value ) => setAttributes( { ctaBackgroundColor: value || '' } ),
+										label: __( 'Colore sfondo pulsante', 'mavida-core' ),
+									},
+							  ]
+							: [] ),
+					] }
+				/>
 
 				<PanelBody title={ __( 'Cache', 'mavida-core' ) } initialOpen={ false }>
 					<TextControl

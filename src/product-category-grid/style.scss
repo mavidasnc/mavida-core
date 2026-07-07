@@ -3,9 +3,18 @@
  */
 
 .mavida-cat-grid {
-	display: grid;
-	grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
-	gap: 1rem;
+	&__items {
+		display: grid;
+		grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
+		gap: 1rem;
+
+		// Sotto i 782px (breakpoint tablet standard di WordPress) si scende a un massimo
+		// di 2 colonne per non stringere troppo le card, ma senza superare il numero
+		// scelto nell'editor: con columns=1 resta a 1 colonna invece di forzarne comunque 2.
+		@media ( max-width: 782px ) {
+			grid-template-columns: repeat( min( var( --mv-columns, 4 ), 2 ), minmax( 0, 1fr ) );
+		}
+	}
 
 	&__item {
 		display: flex;
@@ -28,10 +37,13 @@
 		}
 	}
 
+	// Il tag HTML effettivo (h1-h4/div/span) e' scelto dall'utente in editor; qui si stila
+	// solo per classe, cosi' il markup resta coerente qualunque sia il tag scelto.
 	&__name {
 		display: block;
 		font-weight: 600;
 		text-align: center;
+		margin: 0;
 	}
 
 	img {
@@ -41,10 +53,22 @@
 		border-radius: calc( var( --mv-card-radius, 12px ) - 4px );
 	}
 
-	// Sotto i 782px (breakpoint tablet standard di WordPress) si scende a un massimo di
-	// 2 colonne per non stringere troppo le card, ma senza superare il numero scelto
-	// nell'editor: con columns=1 resta a 1 colonna invece di forzarne comunque 2.
-	@media ( max-width: 782px ) {
-		grid-template-columns: repeat( min( var( --mv-columns, 4 ), 2 ), minmax( 0, 1fr ) );
+	&__cta {
+		display: inline-block;
+		margin-top: 1.5rem;
+		text-decoration: none;
+		color: inherit;
+
+		&--button {
+			padding: 0.75rem 1.5rem;
+			border-radius: var( --mv-card-radius, 12px );
+			background: #1a1a1a;
+			color: #fff;
+			transition: filter 0.2s ease;
+
+			&:hover {
+				filter: brightness( 0.9 );
+			}
+		}
 	}
 }

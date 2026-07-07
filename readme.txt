@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,11 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.4.0 =
+* Tag HTML del nome categoria configurabile (H1-H4, div, span), con colore e dimensione testo.
+* Nuovo campo Call to Action (testo libero, url, dimensione, colori, stile pulsante) sotto la griglia.
+* La select delle categorie da escludere usa ora FormTokenField, lo stesso componente nativo di WordPress per la selezione dei tag.
 
 = 1.3.1 =
 * Aggiunto il file di traduzione languages/mavida-core.pot (45 stringhe estratte) e ripristinato l'header Domain Path.
