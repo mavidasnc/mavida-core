@@ -1,0 +1,35 @@
+/**
+ * Stili applicati sia in frontend sia in editor (proprieta' "style" in block.json).
+ */
+
+.mavida-cat-grid {
+	display: grid;
+	grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
+	gap: 1rem;
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	&__name {
+		display: block;
+		font-weight: 600;
+		text-align: center;
+	}
+
+	img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	// Sotto i 782px (breakpoint tablet standard di WordPress) si scende a 2 colonne,
+	// indipendentemente dal valore scelto nell'editor, per non stringere troppo le card.
+	@media ( max-width: 782px ) {
+		grid-template-columns: repeat( 2, 1fr );
+	}
+}

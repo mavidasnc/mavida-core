@@ -1,0 +1,36 @@
+=== Mavida Core ===
+Contributors: mavida
+Tags: woocommerce, gutenberg, block, categories, menu
+Requires at least: 6.5
+Tested up to: 6.9
+Requires PHP: 7.4
+Stable tag: 1.1.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Funzionalita' core Mavida per WooCommerce/Blocksy: blocco griglia categorie, menu dinamico, opzioni.
+
+== Description ==
+
+Mavida Core aggiunge al sito:
+
+* Un blocco Gutenberg dinamico che mostra una griglia delle categorie prodotto WooCommerce (nome e immagine
+  di categoria gestita da Blocksy), con numero di colonne e categorie escluse configurabili.
+* Un sistema che inietta automaticamente l'elenco delle categorie prodotto come sottovoci di una voce
+  del menu di navigazione, identificata tramite una classe CSS impostabile in una pagina di opzioni dedicata.
+* Aggiornamenti automatici del plugin direttamente dal repository GitHub pubblico.
+
+== Installation ==
+
+1. Carica la cartella `mavida-core` in `wp-content/plugins/`.
+2. Attiva il plugin dal menu Plugin di WordPress.
+3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
+
+== Changelog ==
+
+= 1.1.0 =
+* Blocco Gutenberg "Griglia categorie prodotto" (colonne + esclusioni).
+* Iniezione delle categorie prodotto come sottovoci di menu tramite classe CSS configurabile.
+* Pagina opzioni "Mavida Core".
+* Endpoint REST mavida-core/v1/product-categories.
+* Auto-aggiornamento da GitHub.

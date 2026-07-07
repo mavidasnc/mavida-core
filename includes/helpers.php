@@ -1,0 +1,104 @@
+<?php
+/**
+ * Funzioni di utilita' condivise da blocco, endpoint REST e iniezione menu.
+ * Nessuna classe: procedurale, coerente con lo stile del tema mcparts.
+ *
+ * @package Mavida_Core
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+if ( ! function_exists( 'mavida_core_get_css_class' ) ) {
+	/**
+	 * Restituisce la classe CSS configurata nella pagina opzioni, gia' sanitizzata.
+	 * Usata dal filtro di iniezione del menu per trovare la voce padre a cui agganciare
+	 * le categorie prodotto.
+	 *
+	 * @return string Classe CSS, oppure stringa vuota se non impostata.
+	 */
+	function mavida_core_get_css_class() {
+		$options = get_option( 'mavida_core_options', array() );
+		$class   = isset( $options['menu_css_class'] ) ? $options['menu_css_class'] : 'mavida-product-cats';
+
+		return sanitize_html_class( $class );
+	}
+}
+
+if ( ! function_exists( 'mavida_core_get_product_categories' ) ) {
+	/**
+	 * Wrapper su get_terms() per le categorie prodotto WooCommerce.
+	 * Di default recupera solo le categorie di primo livello (parent = 0).
+	 *
+	 * @param array $args Argomenti aggiuntivi/override per get_terms().
+	 * @return WP_Term[] Elenco categorie, array vuoto se WooCommerce non e' attivo.
+	 */
+	function mavida_core_get_product_categories( array $args = array() ) {
+		// Se la tassonomia prodotto non esiste (WooCommerce disattivo), non fallire: nessuna categoria.
+		if ( ! taxonomy_exists( 'product_cat' ) ) {
+			return array();
+		}
+
+		$defaults = array(
+			'taxonomy'   => 'product_cat',
+			'parent'     => 0,
+			'hide_empty' => false,
+		);
+
+		$terms = get_terms( array_merge( $defaults, $args ) );
+
+		return is_wp_error( $terms ) ? array() : $terms;
+	}
+}
+
+if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
+	/**
+	 * Restituisce il markup <img> dell'immagine di categoria, con la stessa logica
+	 * usata da Blocksy per le card categoria in archivio:
+	 * 1) term meta standard WooCommerce "thumbnail_id";
+	 * 2) fallback storico Blocksy dentro "blocksy_taxonomy_meta_options" (chiavi image/icon_image);
+	 * 3) placeholder WooCommerce.
+	 *
+	 * @param WP_Term $term Il termine categoria prodotto.
+	 * @param string  $size Nome della dimensione immagine da usare.
+	 * @return string Markup HTML gia' pronto per l'output (le funzioni WP usate escapano gia').
+	 */
+	function mavida_core_get_category_image_html( WP_Term $term, $size = 'woocommerce_thumbnail' ) {
+		$attachment_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
+
+		// Fallback: vecchie installazioni Blocksy possono avere l'immagine solo dentro le opzioni del termine.
+		if ( ! $attachment_id ) {
+			$blocksy_options = get_term_meta( $term->term_id, 'blocksy_taxonomy_meta_options', true );
+
+			if ( is_array( $blocksy_options ) ) {
+				$maybe_image = isset( $blocksy_options['image'] ) ? $blocksy_options['image'] : ( $blocksy_options['icon_image'] ?? null );
+
+				if ( is_array( $maybe_image ) && ! empty( $maybe_image['attachment_id'] ) ) {
+					$attachment_id = (int) $maybe_image['attachment_id'];
+				}
+			}
+		}
+
+		if ( $attachment_id ) {
+			$image_html = wp_get_attachment_image(
+				$attachment_id,
+				$size,
+				false,
+				array(
+					'loading' => 'lazy',
+					'alt'     => $term->name,
+				)
+			);
+
+			if ( $image_html ) {
+				return $image_html;
+			}
+		}
+
+		// Nessuna immagine trovata: placeholder nativo WooCommerce, se disponibile.
+		if ( function_exists( 'wc_placeholder_img' ) ) {
+			return wc_placeholder_img( $size );
+		}
+
+		return '';
+	}
+}
