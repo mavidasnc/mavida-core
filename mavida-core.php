@@ -3,7 +3,7 @@
  * Plugin Name:       Mavida Core
  * Plugin URI:        https://github.com/mavidasnc/mavida-core
  * Description:       Funzionalita' core Mavida per WooCommerce/Blocksy: blocco griglia categorie, menu dinamico, opzioni.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            MAVIDA
@@ -65,18 +65,3 @@ foreach ( glob( MAVIDA_CORE_PATH . 'includes/*.php' ) as $mavida_core_include_fi
 	require_once $mavida_core_include_file;
 }
 unset( $mavida_core_include_file );
-
-/**
- * Auto-update da GitHub tramite la libreria plugin-update-checker (YahnisElsts), vendorizzata
- * in vendor/plugin-update-checker/. Il repository e' pubblico: nessuna autenticazione necessaria.
- * La libreria legge le Release/tag GitHub e confronta la versione con l'header "Version" qui sopra.
- */
-require_once MAVIDA_CORE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
-
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-
-PucFactory::buildUpdateChecker(
-	'https://github.com/mavidasnc/mavida-core/',
-	MAVIDA_CORE_FILE,
-	'mavida-core'
-);

@@ -1,8 +1,10 @@
 <?php
 /**
- * Pagina opzioni "Mavida Core": permette di definire il nome della classe CSS
- * a cui agganciare l'iniezione dinamica delle categorie prodotto nel menu
- * (vedi includes/menu-injection.php).
+ * Pagina opzioni "Mavida Core", organizzata a tab:
+ * - "Generale": nome della classe CSS a cui agganciare l'iniezione dinamica delle
+ *   categorie prodotto nel menu (vedi includes/menu-injection.php);
+ * - "Aggiornamenti" (ultima tab): stato dell'auto-update da GitHub e pulsante per
+ *   controllare manualmente la presenza di una nuova versione (vedi includes/updater.php).
  *
  * @package Mavida_Core
  */
@@ -101,25 +103,144 @@ if ( ! function_exists( 'mavida_core_render_menu_css_class_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'mavida_core_get_settings_tabs' ) ) {
+	/**
+	 * Elenco delle tab della pagina opzioni, nell'ordine in cui vanno mostrate.
+	 * "aggiornamenti" e' intenzionalmente l'ultima voce.
+	 *
+	 * @return array<string,string> Slug tab => etichetta.
+	 */
+	function mavida_core_get_settings_tabs() {
+		return array(
+			'generale'      => __( 'Generale', 'mavida-core' ),
+			'aggiornamenti' => __( 'Aggiornamenti', 'mavida-core' ),
+		);
+	}
+}
+
+if ( ! function_exists( 'mavida_core_enqueue_admin_assets' ) ) {
+	/**
+	 * Carica lo script della pagina opzioni (pulsante "Controlla aggiornamenti"),
+	 * solo sulla pagina del plugin.
+	 *
+	 * @param string $hook Hook suffix della schermata admin corrente.
+	 */
+	function mavida_core_enqueue_admin_assets( $hook ) {
+		if ( 'toplevel_page_mavida-core' !== $hook ) {
+			return;
+		}
+
+		$rel_path = 'assets/admin/settings-page.js';
+		$src      = MAVIDA_CORE_URL . $rel_path;
+		$path     = MAVIDA_CORE_PATH . $rel_path;
+		$version  = file_exists( $path ) ? filemtime( $path ) : MAVIDA_CORE_VERSION;
+
+		wp_enqueue_script( 'mavida-core-admin', $src, array( 'jquery' ), $version, true );
+
+		wp_localize_script(
+			'mavida-core-admin',
+			'mavidaCoreAdmin',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'mavida_core_admin_nonce' ),
+				'i18n'    => array(
+					'checkingUpdate'  => __( 'Controllo aggiornamenti in corso…', 'mavida-core' ),
+					'upToDate'        => __( 'Il plugin è già aggiornato all\'ultima versione.', 'mavida-core' ),
+					'updateAvailable' => __( 'È disponibile una nuova versione: %s', 'mavida-core' ),
+					'errorCheck'      => __( 'Impossibile controllare gli aggiornamenti. Riprova più tardi.', 'mavida-core' ),
+				),
+			)
+		);
+	}
+}
+add_action( 'admin_enqueue_scripts', 'mavida_core_enqueue_admin_assets' );
+
 if ( ! function_exists( 'mavida_core_render_settings_page' ) ) {
 	/**
-	 * Renderizza la pagina delle opzioni.
+	 * Renderizza la pagina delle opzioni: tab bar + contenuto della tab selezionata.
 	 */
 	function mavida_core_render_settings_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
+
+		$tabs = mavida_core_get_settings_tabs();
+
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'generale';
+		if ( ! array_key_exists( $current_tab, $tabs ) ) {
+			$current_tab = 'generale';
+		}
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Mavida Core', 'mavida-core' ); ?></h1>
-			<form action="options.php" method="post">
-				<?php
-				settings_fields( 'mavida_core_settings' );
-				do_settings_sections( 'mavida-core' );
-				submit_button();
-				?>
-			</form>
+
+			<nav class="nav-tab-wrapper">
+				<?php foreach ( $tabs as $tab_slug => $tab_label ) : ?>
+					<a
+						href="<?php echo esc_url( add_query_arg( array( 'page' => 'mavida-core', 'tab' => $tab_slug ), admin_url( 'admin.php' ) ) ); ?>"
+						class="nav-tab <?php echo $current_tab === $tab_slug ? 'nav-tab-active' : ''; ?>"
+					>
+						<?php echo esc_html( $tab_label ); ?>
+					</a>
+				<?php endforeach; ?>
+			</nav>
+
+			<div class="mavida-core-tab-content" style="margin-top: 20px;">
+				<?php if ( 'aggiornamenti' === $current_tab ) : ?>
+					<?php mavida_core_render_updates_tab(); ?>
+				<?php else : ?>
+					<form action="options.php" method="post">
+						<?php
+						settings_fields( 'mavida_core_settings' );
+						do_settings_sections( 'mavida-core' );
+						submit_button();
+						?>
+					</form>
+				<?php endif; ?>
+			</div>
 		</div>
+		<?php
+	}
+}
+
+if ( ! function_exists( 'mavida_core_render_updates_tab' ) ) {
+	/**
+	 * Renderizza il contenuto della tab "Aggiornamenti": versione installata, ultima
+	 * versione (popolata via AJAX), link al repository e pulsante di controllo manuale.
+	 */
+	function mavida_core_render_updates_tab() {
+		?>
+		<p class="description">
+			<?php esc_html_e( 'Questo plugin si aggiorna direttamente dalle release GitHub. Usa il pulsante qui sotto per controllare una nuova versione su richiesta; WordPress controlla comunque automaticamente in background.', 'mavida-core' ); ?>
+		</p>
+
+		<table class="form-table" role="presentation">
+			<tbody>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Versione installata', 'mavida-core' ); ?></th>
+					<td><code><?php echo esc_html( MAVIDA_CORE_VERSION ); ?></code></td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Ultima versione', 'mavida-core' ); ?></th>
+					<td><code id="mavida-core-latest-version">&#8211;</code></td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Repository', 'mavida-core' ); ?></th>
+					<td>
+						<a href="https://github.com/mavidasnc/mavida-core" target="_blank" rel="noopener noreferrer">mavidasnc/mavida-core</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p style="margin-top: 10px;">
+			<button type="button" class="button button-primary" id="mavida-core-check-update">
+				<?php esc_html_e( 'Controlla aggiornamenti', 'mavida-core' ); ?>
+			</button>
+			<span id="mavida-core-update-status" style="margin-left: 10px;"></span>
+		</p>
+
+		<div id="mavida-core-update-result"></div>
 		<?php
 	}
 }

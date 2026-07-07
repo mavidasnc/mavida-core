@@ -1,6 +1,6 @@
-# Revisione del codice — Mavida Core 1.1.0
+# Revisione del codice — Mavida Core
 
-Revisione del codice presente nel plugin al momento della release 1.1.0 (tag `v1.1.0`).
+Revisione del codice presente nel plugin, aggiornata alla release 1.2.0 (tag `v1.2.0`).
 Verifiche effettuate: lint sintattico PHP (`php -l`) su tutti i file, build di produzione
 (`npm run build`) completata senza errori, lettura incrociata di tutti i file `includes/` e
 del blocco. **Non** è stata eseguita una verifica end-to-end su un'installazione WordPress
@@ -10,6 +10,33 @@ attivi (vedi la sezione "Verifica end-to-end" del piano di sviluppo).
 
 Nessuna delle criticità elencate è bloccante per l'uso del plugin: sono segnalazioni da
 valutare, in ordine di priorità decrescente.
+
+## Aggiornamento 1.2.0
+
+La release 1.2.0 ha sostituito la libreria `plugin-update-checker` con un updater scritto a
+codice (`includes/updater.php`), aggiunto la guardia WooCommerce sul blocco (**risolve il punto
+2 qui sotto**), introdotto la cache del blocco e riorganizzato la pagina opzioni a tab. Nuove
+osservazioni emerse da questo giro di modifiche:
+
+- **Rate limit GitHub non autenticato.** `includes/updater.php` chiama `api.github.com` senza
+  token: il limite per IP è 60 richieste/ora. Mitigato dalla cache di 6 ore
+  (`mavida_core_github_release`), che riduce le chiamate reali a poche al giorno anche con
+  controlli manuali frequenti dalla tab Aggiornamenti; da tenere presente se in futuro più
+  plugin Mavida sullo stesso server interrogano GitHub in modo non autenticato.
+- **Il pulsante "Svuota cache" è globale, non per singola istanza del blocco.** Incrementando
+  `mavida_core_cache_version` si invalidano tutte le combinazioni di colonne/esclusioni cache
+  ate in qualunque pagina del sito, non solo quelle generate dal blocco su cui si clicca il
+  pulsante. Comportamento corretto e semplice da implementare, ma non ovvio dalla sola
+  etichetta del pulsante: andrebbe chiarito nel testo di aiuto se genera confusione in redazione.
+- **Azione AJAX classica (`admin-ajax.php`) invece di REST per il controllo aggiornamenti.**
+  Scelta intenzionale per replicare 1:1 il pattern già collaudato in `woo-dynamic-pricelist-pro`;
+  il resto del plugin (categorie, invalidazione cache) usa invece la REST API. Le due cose
+  convivono senza conflitti, ma è un'asimmetria voluta da tenere a mente in manutenzione futura.
+- **Stringa nonce duplicata.** `'mavida_core_admin_nonce'` è scritta sia in
+  `includes/settings-page.php` (dove il nonce viene creato) sia in `includes/updater.php` (dove
+  viene verificato). Stesso tipo di duplicazione già segnalata al punto 6 per la classe CSS di
+  default: rischio basso, ma da centralizzare in una costante se si aggiungeranno altre azioni
+  AJAX in futuro.
 
 ## 1. `glob()` non è protetto da un eventuale `false` di ritorno
 
@@ -29,26 +56,13 @@ automatico → warning in log ad ogni richiesta finché il problema non si risol
 **Suggerimento:** `foreach ( (array) glob( ... ) as $file )`, oppure un controllo esplicito
 `if ( false === $files ) { return; }` prima del ciclo.
 
-## 2. Il blocco si registra anche a WooCommerce disattivato
+## 2. ~~Il blocco si registra anche a WooCommerce disattivato~~ — Risolto in 1.2.0
 
-**File:** `includes/block.php:16-18`
+**File:** `includes/block.php`
 
-```php
-function mavida_core_register_blocks() {
-	register_block_type( MAVIDA_CORE_PATH . 'build/product-category-grid' );
-}
-```
-
-La registrazione non verifica che WooCommerce sia attivo. Il rendering lato server è già
-protetto (`mavida_core_get_product_categories()` ritorna `[]` se `product_cat` non esiste, e
-`render.php` fa `return;` su elenco vuoto), quindi non ci sono errori fatali. Ma il blocco resta
-comunque visibile e inseribile dall'editor anche senza WooCommerce, per poi risultare
-silenziosamente vuoto sia in anteprima sia in frontend: un redattore potrebbe non capire perché
-"non succede nulla".
-
-**Suggerimento:** condizionare la registrazione a `class_exists( 'WooCommerce' )`, oppure
-mostrare un placeholder esplicito nell'editor ("WooCommerce non è attivo") quando l'elenco
-categorie è vuoto.
+`mavida_core_register_blocks()` ora esce subito (`return;`) se `class_exists( 'WooCommerce' )` è
+falso, prima di chiamare `register_block_type()`. Il blocco non compare più nell'inseritore
+quando WooCommerce non è attivo.
 
 ## 3. Nessun feedback in editor se la chiamata REST fallisce
 
@@ -119,12 +133,15 @@ con cui sono state create. Da tenere a mente se il caso d'uso cambierà.
 | # | Criticità | Severità | Tipo |
 |---|-----------|----------|------|
 | 1 | `glob()` non protetto da `false` | Bassa | Robustezza |
-| 2 | Blocco registrato anche senza WooCommerce | Bassa | UX editor |
+| 2 | ~~Blocco registrato anche senza WooCommerce~~ | Risolto in 1.2.0 | — |
 | 3 | Nessun feedback su errore REST in editor | Bassa | UX editor |
 | 4 | Breakpoint mobile forza 2 colonne | Bassa | UX frontend |
 | 5 | `Domain Path` senza cartella `languages/` | Molto bassa | Housekeeping |
 | 6 | Default duplicato in 3 punti | Molto bassa | Manutenibilità |
 | 7 | Ordine sottovoci menu dipende dalla posizione in array | Nota informativa | — |
+| 8 | Rate limit GitHub non autenticato (mitigato da cache 6h) | Nota informativa | — |
+| 9 | Pulsante "Svuota cache" ha effetto globale, non per istanza | Bassa | UX editor |
+| 10 | Nonce AJAX duplicato in 2 file (stesso pattern del punto 6) | Molto bassa | Manutenibilità |
 
 Nessuna criticità di sicurezza rilevata: output sempre escapato (`esc_html`, `esc_attr`,
 `esc_url`, o funzioni core che già escapano), input sanitizzato (`sanitize_html_class`,

@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,12 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.2.0 =
+* Auto-aggiornamento da GitHub riscritto senza librerie esterne (rimossa la dipendenza plugin-update-checker).
+* Il blocco "Griglia categorie prodotto" si registra solo se WooCommerce è attivo.
+* Cache del markup frontend del blocco (durata configurabile, pulsante "Svuota cache" nel pannello del blocco).
+* Pagina opzioni "Mavida Core" riorganizzata a tab, con una nuova tab "Aggiornamenti".
 
 = 1.1.0 =
 * Blocco Gutenberg "Griglia categorie prodotto" (colonne + esclusioni).

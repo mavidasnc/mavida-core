@@ -5,24 +5,27 @@ Plugin WordPress con funzionalita' core per siti WooCommerce basati su [Blocksy]
 ## Funzionalita'
 
 - **Blocco Gutenberg "Griglia categorie prodotto"** (`mavida-core/product-category-grid`): mostra le
-  categorie prodotto WooCommerce in griglia, con il nome in alto e l'immagine di categoria (gestita da
-  Blocksy tramite il term meta `thumbnail_id`) sotto. Numero di colonne ed elenco di categorie da
-  escludere configurabili dal pannello del blocco.
+  categorie prodotto WooCommerce in griglia (solo se WooCommerce e' attivo), con il nome in alto e
+  l'immagine di categoria (gestita da Blocksy tramite il term meta `thumbnail_id`) sotto. Numero di
+  colonne, elenco di categorie da escludere e durata della cache configurabili dal pannello del blocco.
+- **Cache del blocco**: il markup del blocco viene salvato in transient per il numero di minuti
+  impostato nel pannello (0 per disattivarla), con un pulsante "Svuota cache" che la invalida.
 - **Menu dinamico**: le categorie prodotto vengono aggiunte automaticamente come sottovoci di una voce
   del menu di navigazione, identificata da una classe CSS configurabile in Bacheca > Mavida Core.
 - **Auto-aggiornamento**: il plugin controlla e propone gli aggiornamenti direttamente dal repository
-  GitHub pubblico [`mavidasnc/mavida-core`](https://github.com/mavidasnc/mavida-core), tramite la
-  libreria [plugin-update-checker](https://github.com/YahnisElsts/plugin-update-checker).
+  GitHub pubblico [`mavidasnc/mavida-core`](https://github.com/mavidasnc/mavida-core), tramite un
+  updater scritto a codice (nessuna libreria esterna), gestibile anche manualmente dalla tab
+  "Aggiornamenti" della pagina opzioni.
 
 ## Struttura
 
 ```
 mavida-core/
-├─ mavida-core.php     # File principale: header, costanti, loader, init auto-update
-├─ includes/           # Un file per funzionalita', caricati automaticamente
+├─ mavida-core.php     # File principale: header, costanti, loader
+├─ includes/           # Un file per funzionalita', caricati automaticamente (updater incluso)
+├─ assets/admin/       # Script della pagina opzioni (non passa dal build @wordpress/scripts)
 ├─ src/                # Sorgenti del blocco Gutenberg (@wordpress/scripts)
-├─ build/              # Output compilato del blocco (committato)
-└─ vendor/             # Libreria plugin-update-checker vendorizzata (committata)
+└─ build/              # Output compilato del blocco (committato)
 ```
 
 ## Sviluppo

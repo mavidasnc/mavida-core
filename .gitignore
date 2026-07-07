@@ -1,5 +1,5 @@
 # Dipendenze npm: non fanno parte del pacchetto distribuito, si rigenerano con "npm install".
 node_modules/
 
-# build/ e vendor/ vengono invece COMMITTATI: lo zip sorgente generato da GitHub
-# deve essere direttamente installabile come plugin (vedi auto-update in mavida-core.php).
+# build/ viene invece COMMITTATA: lo zip sorgente generato da GitHub deve essere
+# direttamente installabile come plugin (vedi auto-update in includes/updater.php).

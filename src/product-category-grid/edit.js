@@ -6,15 +6,36 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, SelectControl, Spinner } from '@wordpress/components';
+import { PanelBody, RangeControl, SelectControl, TextControl, Button, Notice, Spinner } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import apiFetch from '@wordpress/api-fetch';
 
 import './editor.scss';
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { columns, excludedCategories } = attributes;
+	const { columns, excludedCategories, cacheMinutes } = attributes;
 	const blockProps = useBlockProps();
+
+	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco
+	// (vedi includes/block-cache.php) tramite l'endpoint REST mavida-core/v1/purge-cache.
+	const [ isPurgingCache, setIsPurgingCache ] = useState( false );
+	const [ purgeNotice, setPurgeNotice ] = useState( null );
+
+	function onPurgeCache() {
+		setIsPurgingCache( true );
+		setPurgeNotice( null );
+
+		apiFetch( { path: '/mavida-core/v1/purge-cache', method: 'POST' } )
+			.then( () => {
+				setPurgeNotice( { status: 'success', message: __( 'Cache svuotata.', 'mavida-core' ) } );
+			} )
+			.catch( () => {
+				setPurgeNotice( { status: 'error', message: __( 'Impossibile svuotare la cache. Riprova.', 'mavida-core' ) } );
+			} )
+			.finally( () => {
+				setIsPurgingCache( false );
+			} );
+	}
 
 	// Elenco delle categorie prodotto, recuperato dall'endpoint REST del plugin
 	// (mavida-core/v1/product-categories) per popolare la select di esclusione.
@@ -69,6 +90,36 @@ export default function Edit( { attributes, setAttributes } ) {
 							options={ categoryOptions }
 							onChange={ onChangeExcludedCategories }
 						/>
+					) }
+				</PanelBody>
+
+				<PanelBody title={ __( 'Cache', 'mavida-core' ) } initialOpen={ false }>
+					<TextControl
+						type="number"
+						min={ 0 }
+						label={ __( 'Durata cache (minuti)', 'mavida-core' ) }
+						help={ __( 'Il markup della griglia viene salvato in cache per il numero di minuti indicato. Imposta 0 per disattivare la cache.', 'mavida-core' ) }
+						value={ cacheMinutes }
+						onChange={ ( value ) => setAttributes( { cacheMinutes: Math.max( 0, Number( value ) || 0 ) } ) }
+					/>
+
+					<Button
+						variant="secondary"
+						isBusy={ isPurgingCache }
+						disabled={ isPurgingCache }
+						onClick={ onPurgeCache }
+					>
+						{ __( 'Svuota cache', 'mavida-core' ) }
+					</Button>
+
+					{ purgeNotice && (
+						<Notice
+							status={ purgeNotice.status }
+							isDismissible={ false }
+							className="mavida-core-purge-notice"
+						>
+							{ purgeNotice.message }
+						</Notice>
 					) }
 				</PanelBody>
 			</InspectorControls>

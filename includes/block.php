@@ -14,6 +14,13 @@ if ( ! function_exists( 'mavida_core_register_blocks' ) ) {
 	 * quindi non serve passare qui un render_callback.
 	 */
 	function mavida_core_register_blocks() {
+		// Il blocco mostra categorie prodotto WooCommerce: senza WooCommerce non avrebbe
+		// nulla da mostrare. Evita di registrarlo per non lasciarlo comparire, vuoto e
+		// confuso, nell'inserimento blocchi.
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return;
+		}
+
 		register_block_type( MAVIDA_CORE_PATH . 'build/product-category-grid' );
 	}
 }
