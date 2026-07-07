@@ -1,15 +1,39 @@
 # Revisione del codice — Mavida Core
 
-Revisione del codice presente nel plugin, aggiornata alla release 1.2.0 (tag `v1.2.0`).
+Revisione del codice presente nel plugin, aggiornata alla release 1.3.0 (tag `v1.3.0`).
 Verifiche effettuate: lint sintattico PHP (`php -l`) su tutti i file, build di produzione
 (`npm run build`) completata senza errori, lettura incrociata di tutti i file `includes/` e
 del blocco. **Non** è stata eseguita una verifica end-to-end su un'installazione WordPress
-reale (questo workspace contiene solo i sorgenti del tema/plugin, non un sito avviabile):
+reale (questo workspace contiene solo i sorgenti del tema/plugin, non un sito avviabile, e il
+dominio pubblico del sito non era raggiungibile da questo ambiente al momento della revisione):
 prima di andare in produzione va fatto un giro di test su staging, con WooCommerce e Blocksy
 attivi (vedi la sezione "Verifica end-to-end" del piano di sviluppo).
 
-Nessuna delle criticità elencate è bloccante per l'uso del plugin: sono segnalazioni da
-valutare, in ordine di priorità decrescente.
+Nessuna delle criticità ancora aperte è bloccante per l'uso del plugin.
+
+## Aggiornamento 1.3.0 — bug reale corretto
+
+L'utente ha segnalato che, dopo aver aggiornato il plugin alla 1.2.0, WordPress continuava a
+mostrare "È disponibile una nuova versione... versione 1.2.0" nonostante la versione installata
+fosse già la 1.2.0. Causa individuata rileggendo `mavida-core.php`: il bump di versione della
+release 1.2.0 aveva aggiornato l'header del plugin (`* Version: 1.2.0`, quello che WordPress
+mostra nella lista Plugin) ma **non** la costante `MAVIDA_CORE_VERSION` usata internamente
+dall'updater per il confronto (`version_compare()`), rimasta a `1.1.0`. L'updater confrontava
+quindi correttamente la release GitHub (1.2.0) con una versione locale che credeva fosse ancora
+1.1.0, e segnalava un aggiornamento disponibile che in realtà non c'era.
+
+**Correzione:** la versione non è più duplicata a mano. `MAVIDA_CORE_VERSION` viene ora letta
+direttamente dall'header del plugin con `get_file_data()` (unica fonte di verità), quindi non può
+più disallinearsi. In aggiunta, il controllo manuale ("Controlla aggiornamenti" nella tab
+Aggiornamenti) ora chiama `wp_update_plugins()` per ricostruire subito il transient di WordPress,
+invece di limitarsi a cancellarlo: prima di questa modifica, anche dopo aver risolto la causa,
+l'avviso poteva restare visibile fino al successivo controllo automatico di WordPress (fino a 12
+ore).
+
+Questo è esattamente il tipo di bug che le voci 6 e 10 qui sotto segnalavano in astratto (valori
+duplicati in più punti che possono disallinearsi): la versione va aggiunta alla lista delle cose
+da tenere d'occhio ad ogni release futura, se in altri punti del codice dovessero comparire nuovi
+valori duplicati a mano.
 
 ## Aggiornamento 1.2.0
 
@@ -38,23 +62,12 @@ osservazioni emerse da questo giro di modifiche:
   default: rischio basso, ma da centralizzare in una costante se si aggiungeranno altre azioni
   AJAX in futuro.
 
-## 1. `glob()` non è protetto da un eventuale `false` di ritorno
+## 1. ~~`glob()` non è protetto da un eventuale `false` di ritorno~~ — Risolto in 1.3.0
 
-**File:** `mavida-core.php:64`
+**File:** `mavida-core.php`
 
-```php
-foreach ( glob( MAVIDA_CORE_PATH . 'includes/*.php' ) as $mavida_core_include_file ) {
-```
-
-`glob()` restituisce `false` (non un array vuoto) se la lettura della cartella fallisce, ad
-esempio per una restrizione `open_basedir` o un problema di permessi sul filesystem. In quel
-caso, in PHP 8 un `foreach` su `false` genera un warning ("foreach() argument must be of type
-array|object, bool given") invece di limitarsi a non caricare nulla. Scenario concreto: hosting
-con `open_basedir` che esclude temporaneamente la cartella del plugin durante un deploy
-automatico → warning in log ad ogni richiesta finché il problema non si risolve.
-
-**Suggerimento:** `foreach ( (array) glob( ... ) as $file )`, oppure un controllo esplicito
-`if ( false === $files ) { return; }` prima del ciclo.
+Il ciclo è ora `foreach ( (array) glob( ... ) as $file )`: un eventuale `false` (lettura cartella
+fallita) diventa un array vuoto invece di generare un warning PHP.
 
 ## 2. ~~Il blocco si registra anche a WooCommerce disattivato~~ — Risolto in 1.2.0
 
@@ -64,54 +77,37 @@ automatico → warning in log ad ogni richiesta finché il problema non si risol
 falso, prima di chiamare `register_block_type()`. Il blocco non compare più nell'inseritore
 quando WooCommerce non è attivo.
 
-## 3. Nessun feedback in editor se la chiamata REST fallisce
+## 3. ~~Nessun feedback in editor se la chiamata REST fallisce~~ — Risolto in 1.3.0
 
-**File:** `src/product-category-grid/edit.js` (hook `useEffect` di caricamento categorie)
+**File:** `src/product-category-grid/edit.js`
 
-La `apiFetch` verso `mavida-core/v1/product-categories` non gestisce il caso di errore in modo
-visibile: se la richiesta fallisce (permessi, plugin di sicurezza che blocca la REST API,
-problema di rete) `isLoadingCategories` passa comunque a `false` e la select "categorie da
-escludere" resta semplicemente vuota, senza alcun messaggio. Inoltre non c'è una funzione di
-cleanup sull'effect: se il blocco viene rimosso mentre la richiesta è ancora in corso, l'update
-di stato successivo alla risposta puo' generare un warning React di "set state su componente
-smontato" (innocuo, ma da segnalare per pulizia).
+L'effect di caricamento categorie ora imposta un flag `isMounted` (cleanup al momento dello
+smontaggio del componente) e, in caso di errore della `apiFetch`, mostra un `Notice` di errore
+nel pannello al posto della select vuota e silenziosa.
 
-**Suggerimento:** in caso di errore mostrare un `Notice` (`@wordpress/components`) nel pannello
-laterale; per il cleanup, usare un flag `let isMounted = true` nella closure dell'effect (o un
-`AbortController` passato ad `apiFetch`) e non aggiornare lo stato se il componente è smontato.
+## 4. ~~Il breakpoint mobile forza sempre 2 colonne~~ — Risolto in 1.3.0
 
-## 4. Il breakpoint mobile forza sempre 2 colonne
+**File:** `src/product-category-grid/style.scss`
 
-**File:** `src/product-category-grid/style.scss` (media query `max-width: 782px`)
+Sotto i 782px il CSS ora usa `repeat( min( var( --mv-columns, 4 ), 2 ), minmax( 0, 1fr ) )`: con
+`columns = 1` scelto in editor, il mobile mostra 1 colonna invece di forzarne comunque 2.
 
-Sotto i 782px il CSS impone `grid-template-columns: repeat(2, 1fr)` a prescindere dal valore
-scelto nell'editor. Se un redattore imposta volutamente `columns = 1` (ad esempio per card più
-grandi in evidenza), su mobile vedrebbe comunque 2 colonne, contraddicendo la scelta fatta.
+## 5. ~~`Domain Path` punta a una cartella `languages/` inesistente~~ — Risolto in 1.3.0
 
-**Suggerimento:** calcolare il minimo tra il valore scelto e 2 (es. passando anche un
-`--mv-columns-mobile` calcolato in `render.php`), oppure documentare il comportamento come
-intenzionale se il caso d'uso con 1 colonna non è previsto.
+**File:** `mavida-core.php`
 
-## 5. `Domain Path` punta a una cartella `languages/` inesistente
+La riga `Domain Path: /languages` è stata rimossa dall'header, non essendoci ancora una cartella
+`languages/` reale con traduzioni estratte (l'estrazione richiede WP-CLI, non disponibile in
+questo ambiente di sviluppo). Da ripristinare quando si predisporrà un vero `.pot`.
+`load_plugin_textdomain()` resta comunque attivo e continuerà a funzionare non appena la cartella
+sarà aggiunta, indipendentemente dall'header.
 
-**File:** `mavida-core.php:14`
+## 6. ~~Valore di default duplicato in tre punti~~ — Risolto in 1.3.0
 
-L'header dichiara `Domain Path: /languages`, ma la cartella non esiste ancora e non è stato
-generato alcun file `.pot`/`.po`/`.mo`. Non è un errore bloccante (WordPress non trova nulla da
-caricare e prosegue), ma è un'incompletezza da sistemare prima di distribuire traduzioni, o da
-rimuovere dall'header finché non si predispone la cartella.
+**File:** `mavida-core.php`, `includes/settings-page.php`
 
-## 6. Valore di default duplicato in tre punti
-
-**File:** `mavida-core.php:51`, `includes/settings-page.php` (default di `register_setting` e
-fallback in `mavida_core_sanitize_options`)
-
-La stringa `'mavida-product-cats'` (classe CSS di default) è scritta tre volte in punti diversi
-del codice. Rischio basso oggi, ma se in futuro si decidesse di cambiare il default andrebbe
-ricordato di aggiornarlo in tutti e tre i punti.
-
-**Suggerimento:** centralizzare il valore in una costante, ad esempio
-`MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS`, definita accanto alle altre costanti in `mavida-core.php`.
+Il valore `'mavida-product-cats'` è ora centralizzato nella costante
+`MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS`, usata in tutti e tre i punti che prima lo duplicavano.
 
 ## 7. Nota (non un difetto): ordinamento delle sottovoci menu iniettate
 
@@ -126,24 +122,45 @@ Se in futuro quella stessa voce di menu avesse anche altre sottovoci reali aggiu
 da Bacheca, quelle comparirebbero prima delle categorie iniettate, indipendentemente dall'ordine
 con cui sono state create. Da tenere a mente se il caso d'uso cambierà.
 
+## 9. ~~Pulsante "Svuota cache" ha effetto globale~~ — Chiarito in 1.3.0
+
+**File:** `src/product-category-grid/edit.js`
+
+Il comportamento non è cambiato (resta corretto e voluto: incrementa `mavida_core_cache_version`,
+invalidando la cache di tutte le griglie del sito), ma ora sotto il pulsante compare un testo di
+aiuto esplicito: "Svuota la cache di tutte le griglie categorie del sito, non solo di questo
+blocco."
+
+## 10. ~~Nonce AJAX duplicato in 2 file~~ — Risolto in 1.3.0
+
+**File:** `mavida-core.php`, `includes/settings-page.php`, `includes/updater.php`
+
+La stringa `'mavida_core_admin_nonce'` è ora centralizzata nella costante
+`MAVIDA_CORE_ADMIN_NONCE_ACTION`.
+
 ---
 
 ## Riepilogo priorità
 
-| # | Criticità | Severità | Tipo |
-|---|-----------|----------|------|
-| 1 | `glob()` non protetto da `false` | Bassa | Robustezza |
-| 2 | ~~Blocco registrato anche senza WooCommerce~~ | Risolto in 1.2.0 | — |
-| 3 | Nessun feedback su errore REST in editor | Bassa | UX editor |
-| 4 | Breakpoint mobile forza 2 colonne | Bassa | UX frontend |
-| 5 | `Domain Path` senza cartella `languages/` | Molto bassa | Housekeeping |
-| 6 | Default duplicato in 3 punti | Molto bassa | Manutenibilità |
+| # | Criticità | Stato | Tipo |
+|---|-----------|-------|------|
+| — | Costante versione disallineata (falso "aggiornamento disponibile") | **Risolto in 1.3.0** | Bug |
+| 1 | `glob()` non protetto da `false` | Risolto in 1.3.0 | Robustezza |
+| 2 | Blocco registrato anche senza WooCommerce | Risolto in 1.2.0 | UX editor |
+| 3 | Nessun feedback su errore REST in editor | Risolto in 1.3.0 | UX editor |
+| 4 | Breakpoint mobile forza 2 colonne | Risolto in 1.3.0 | UX frontend |
+| 5 | `Domain Path` senza cartella `languages/` | Risolto in 1.3.0 | Housekeeping |
+| 6 | Default duplicato in 3 punti | Risolto in 1.3.0 | Manutenibilità |
 | 7 | Ordine sottovoci menu dipende dalla posizione in array | Nota informativa | — |
 | 8 | Rate limit GitHub non autenticato (mitigato da cache 6h) | Nota informativa | — |
-| 9 | Pulsante "Svuota cache" ha effetto globale, non per istanza | Bassa | UX editor |
-| 10 | Nonce AJAX duplicato in 2 file (stesso pattern del punto 6) | Molto bassa | Manutenibilità |
+| 9 | Pulsante "Svuota cache" ha effetto globale, non per istanza | Chiarito in 1.3.0 (help text) | UX editor |
+| 10 | Nonce AJAX duplicato in 2 file | Risolto in 1.3.0 | Manutenibilità |
+
+Restano aperte solo le due note informative (7 e 8): nessuna richiede un intervento urgente.
 
 Nessuna criticità di sicurezza rilevata: output sempre escapato (`esc_html`, `esc_attr`,
 `esc_url`, o funzioni core che già escapano), input sanitizzato (`sanitize_html_class`,
-cast a `int`), capability verificate (`manage_options` per le opzioni, `edit_posts` per
-l'endpoint REST), nonce gestiti dalla Settings API.
+cast a `int`, filtro su `cardBackgroundColor` per impedire iniezione di dichiarazioni CSS
+aggiuntive), capability verificate (`manage_options` per le opzioni, `edit_posts` per l'endpoint
+REST categorie, `manage_options` per l'endpoint REST di invalidazione cache), nonce gestiti dalla
+Settings API e da `check_ajax_referer()`.

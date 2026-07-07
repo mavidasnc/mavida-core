@@ -121,7 +121,11 @@ if ( ! function_exists( 'mavida_core_updater_get_remote_release' ) ) {
 
 if ( ! function_exists( 'mavida_core_updater_force_check' ) ) {
 	/**
-	 * Forza un controllo immediato, ignorando ogni cache.
+	 * Forza un controllo immediato, ignorando ogni cache, e ricostruisce subito il
+	 * transient site "update_plugins" invece di limitarsi a cancellarlo. Senza questo
+	 * passaggio l'avviso "aggiornamento disponibile" nella lista Plugin poteva restare
+	 * visibile con dati non aggiornati fino al successivo controllo automatico di
+	 * WordPress (fino a 12 ore), anche dopo aver premuto "Controlla aggiornamenti".
 	 *
 	 * @return array|false
 	 */
@@ -129,7 +133,14 @@ if ( ! function_exists( 'mavida_core_updater_force_check' ) ) {
 		delete_transient( 'mavida_core_github_release' );
 		delete_site_transient( 'update_plugins' );
 
-		return mavida_core_updater_get_remote_release( true );
+		$release = mavida_core_updater_get_remote_release( true );
+
+		if ( ! function_exists( 'wp_update_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/update.php';
+		}
+		wp_update_plugins();
+
+		return $release;
 	}
 }
 
@@ -277,7 +288,7 @@ if ( ! function_exists( 'mavida_core_updater_handle_check_update' ) ) {
 	 * Handler AJAX del pulsante "Controlla aggiornamenti" nella tab Aggiornamenti.
 	 */
 	function mavida_core_updater_handle_check_update() {
-		check_ajax_referer( 'mavida_core_admin_nonce', 'nonce' );
+		check_ajax_referer( MAVIDA_CORE_ADMIN_NONCE_ACTION, 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => __( 'Permessi insufficienti.', 'mavida-core' ) ), 403 );

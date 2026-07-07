@@ -41,7 +41,7 @@ if ( ! function_exists( 'mavida_core_register_settings' ) ) {
 			array(
 				'type'              => 'array',
 				'sanitize_callback' => 'mavida_core_sanitize_options',
-				'default'           => array( 'menu_css_class' => 'mavida-product-cats' ),
+				'default'           => array( 'menu_css_class' => MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS ),
 			)
 		);
 
@@ -78,7 +78,7 @@ if ( ! function_exists( 'mavida_core_sanitize_options' ) ) {
 		// Se l'utente svuota il campo o inserisce un valore non valido come classe CSS,
 		// si torna al default invece di lasciare l'iniezione del menu silenziosamente disattivata.
 		if ( '' === $class ) {
-			$class = 'mavida-product-cats';
+			$class = MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS;
 		}
 
 		return array( 'menu_css_class' => $class );
@@ -91,7 +91,7 @@ if ( ! function_exists( 'mavida_core_render_menu_css_class_field' ) ) {
 	 */
 	function mavida_core_render_menu_css_class_field() {
 		$options = get_option( 'mavida_core_options', array() );
-		$value   = isset( $options['menu_css_class'] ) ? $options['menu_css_class'] : 'mavida-product-cats';
+		$value   = isset( $options['menu_css_class'] ) ? $options['menu_css_class'] : MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS;
 		?>
 		<input
 			type="text"
@@ -142,7 +142,7 @@ if ( ! function_exists( 'mavida_core_enqueue_admin_assets' ) ) {
 			'mavidaCoreAdmin',
 			array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'mavida_core_admin_nonce' ),
+				'nonce'   => wp_create_nonce( MAVIDA_CORE_ADMIN_NONCE_ACTION ),
 				'i18n'    => array(
 					'checkingUpdate'  => __( 'Controllo aggiornamenti in corso…', 'mavida-core' ),
 					'upToDate'        => __( 'Il plugin è già aggiornato all\'ultima versione.', 'mavida-core' ),

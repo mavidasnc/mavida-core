@@ -5,7 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import { useBlockProps, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
 import { PanelBody, RangeControl, SelectControl, TextControl, Button, Notice, Spinner } from '@wordpress/components';
 import ServerSideRender from '@wordpress/server-side-render';
 import apiFetch from '@wordpress/api-fetch';
@@ -13,7 +13,7 @@ import apiFetch from '@wordpress/api-fetch';
 import './editor.scss';
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { columns, excludedCategories, cacheMinutes } = attributes;
+	const { columns, excludedCategories, cacheMinutes, cardBackgroundColor, cardBorderRadius } = attributes;
 	const blockProps = useBlockProps();
 
 	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco
@@ -44,16 +44,32 @@ export default function Edit( { attributes, setAttributes } ) {
 	// che disabilitassero show_in_rest sulla tassonomia product_cat.
 	const [ categories, setCategories ] = useState( [] );
 	const [ isLoadingCategories, setIsLoadingCategories ] = useState( true );
+	const [ categoriesError, setCategoriesError ] = useState( false );
 
 	useEffect( () => {
+		// Evita di aggiornare lo stato se il componente e' stato smontato (blocco rimosso)
+		// prima che la richiesta sia completata.
+		let isMounted = true;
+
 		apiFetch( { path: '/mavida-core/v1/product-categories' } )
 			.then( ( result ) => {
+				if ( ! isMounted ) {
+					return;
+				}
 				setCategories( result );
 				setIsLoadingCategories( false );
 			} )
 			.catch( () => {
+				if ( ! isMounted ) {
+					return;
+				}
+				setCategoriesError( true );
 				setIsLoadingCategories( false );
 			} );
+
+		return () => {
+			isMounted = false;
+		};
 	}, [] );
 
 	// SelectControl nativa "multiple": i value sono sempre stringhe, vanno
@@ -79,9 +95,15 @@ export default function Edit( { attributes, setAttributes } ) {
 						max={ 8 }
 					/>
 
-					{ isLoadingCategories ? (
-						<Spinner />
-					) : (
+					{ isLoadingCategories && <Spinner /> }
+
+					{ ! isLoadingCategories && categoriesError && (
+						<Notice status="error" isDismissible={ false }>
+							{ __( "Impossibile caricare l'elenco delle categorie. Ricarica la pagina per riprovare.", 'mavida-core' ) }
+						</Notice>
+					) }
+
+					{ ! isLoadingCategories && ! categoriesError && (
 						<SelectControl
 							multiple
 							label={ __( 'Categorie da escludere', 'mavida-core' ) }
@@ -92,6 +114,26 @@ export default function Edit( { attributes, setAttributes } ) {
 						/>
 					) }
 				</PanelBody>
+
+				<PanelColorSettings
+					title={ __( 'Aspetto card', 'mavida-core' ) }
+					initialOpen={ false }
+					colorSettings={ [
+						{
+							value: cardBackgroundColor,
+							onChange: ( value ) => setAttributes( { cardBackgroundColor: value || '#ffffff' } ),
+							label: __( 'Colore sfondo card', 'mavida-core' ),
+						},
+					] }
+				>
+					<RangeControl
+						label={ __( 'Arrotondamento angoli (px)', 'mavida-core' ) }
+						value={ cardBorderRadius }
+						onChange={ ( value ) => setAttributes( { cardBorderRadius: value } ) }
+						min={ 0 }
+						max={ 40 }
+					/>
+				</PanelColorSettings>
 
 				<PanelBody title={ __( 'Cache', 'mavida-core' ) } initialOpen={ false }>
 					<TextControl
@@ -111,6 +153,9 @@ export default function Edit( { attributes, setAttributes } ) {
 					>
 						{ __( 'Svuota cache', 'mavida-core' ) }
 					</Button>
+					<p className="components-base-control__help">
+						{ __( 'Svuota la cache di tutte le griglie categorie del sito, non solo di questo blocco.', 'mavida-core' ) }
+					</p>
 
 					{ purgeNotice && (
 						<Notice

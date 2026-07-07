@@ -22,6 +22,18 @@ $excluded_categories = isset( $attributes['excludedCategories'] )
 	? array_map( 'intval', (array) $attributes['excludedCategories'] )
 	: array();
 
+// Aspetto delle card: colore di sfondo e arrotondamento angoli, entrambi configurabili
+// dal pannello del blocco. Il colore viene ripulito da caratteri che permetterebbero di
+// iniettare ulteriori dichiarazioni CSS (es. ";", ":"), mantenendo i formati leciti
+// (#hex, rgb()/rgba(), hsl()/hsla(), nomi colore, var(--...)).
+$card_background_color = isset( $attributes['cardBackgroundColor'] ) ? (string) $attributes['cardBackgroundColor'] : '#ffffff';
+$card_background_color = preg_replace( '/[^a-zA-Z0-9#(),.%\- ]/', '', $card_background_color );
+if ( '' === $card_background_color ) {
+	$card_background_color = '#ffffff';
+}
+
+$card_border_radius = isset( $attributes['cardBorderRadius'] ) ? max( 0, (int) $attributes['cardBorderRadius'] ) : 12;
+
 // Durata cache in minuti, configurabile dal pannello del blocco: 0 disabilita la cache.
 $cache_minutes = isset( $attributes['cacheMinutes'] ) ? max( 0, (int) $attributes['cacheMinutes'] ) : 60;
 
@@ -33,7 +45,7 @@ if ( $cache_minutes > 0 ) {
 	// precedenza diventa automaticamente irraggiungibile, senza dover enumerare o cancellare
 	// i singoli transient esistenti (che nel frattempo scadono comunque da soli).
 	$cache_version = (int) get_option( 'mavida_core_cache_version', 1 );
-	$cache_key     = 'mavida_core_grid_' . $cache_version . '_' . md5( wp_json_encode( array( $columns, $excluded_categories ) ) );
+	$cache_key     = 'mavida_core_grid_' . $cache_version . '_' . md5( wp_json_encode( array( $columns, $excluded_categories, $card_background_color, $card_border_radius ) ) );
 
 	$cached_html = get_transient( $cache_key );
 
@@ -54,11 +66,17 @@ if ( empty( $categories ) ) {
 	return;
 }
 
-// Numero di colonne passato come custom property CSS, consumata da style.scss.
+// Colonne, colore di sfondo e arrotondamento delle card passati come custom property CSS,
+// consumate da style.scss.
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'mavida-cat-grid',
-		'style' => '--mv-columns:' . $columns . ';',
+		'style' => sprintf(
+			'--mv-columns:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;',
+			$columns,
+			$card_background_color,
+			$card_border_radius
+		),
 	)
 );
 

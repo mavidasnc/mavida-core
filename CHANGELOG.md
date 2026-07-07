@@ -5,6 +5,32 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.3.0] - 2026-07-07
+
+### Fixed
+- Corretto il bug per cui WordPress continuava a segnalare un aggiornamento disponibile anche a
+  plugin già aggiornato: la costante `MAVIDA_CORE_VERSION` era rimasta disallineata dall'header
+  durante il bump a 1.2.0. La versione viene ora letta direttamente dall'header del plugin
+  (`get_file_data()`), eliminando la duplicazione che aveva causato il problema.
+- Il controllo manuale nella tab Aggiornamenti ora ricostruisce subito il transient di WordPress
+  (`wp_update_plugins()`), invece di limitarsi a cancellarlo: l'avviso "aggiornamento disponibile"
+  si aggiorna immediatamente invece di attendere il prossimo controllo automatico.
+- `glob()` in `mavida-core.php` e' ora protetto contro un eventuale ritorno `false`.
+- Il breakpoint mobile del blocco rispetta ora il numero di colonne scelto (non forza più sempre
+  2 colonne quando l'editor ne ha impostata 1).
+- Gestione dell'errore (e cleanup allo smontaggio) quando la richiesta REST delle categorie fallisce
+  nell'editor del blocco.
+- Rimosso `Domain Path` dall'header del plugin: puntava a una cartella `languages/` inesistente.
+- Centralizzati in costanti il valore di default della classe CSS del menu e l'azione del nonce
+  amministrativo, prima duplicati in più file.
+
+### Added
+- Il blocco "Griglia categorie prodotto" ha ora card con sfondo (colore configurabile dal
+  pannello), angoli arrotondati (configurabili) e una piccola animazione al passaggio del mouse
+  (sollevamento + ombra), ispirata alle card prodotto delle demo del gruppo Mavida.
+
+[1.3.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.3.0
+
 ## [1.2.0] - 2026-07-07
 
 ### Changed

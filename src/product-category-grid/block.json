@@ -2,11 +2,11 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "mavida-core/product-category-grid",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"title": "Griglia categorie prodotto",
 	"category": "woocommerce",
 	"icon": "grid-view",
-	"description": "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne ed esclusioni configurabili.",
+	"description": "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne, esclusioni, colore sfondo card e arrotondamento angoli configurabili.",
 	"keywords": [ "woocommerce", "categorie", "prodotti", "griglia" ],
 	"textdomain": "mavida-core",
 	"supports": {
@@ -32,6 +32,14 @@
 		"cacheMinutes": {
 			"type": "number",
 			"default": 60
+		},
+		"cardBackgroundColor": {
+			"type": "string",
+			"default": "#ffffff"
+		},
+		"cardBorderRadius": {
+			"type": "number",
+			"default": 12
 		}
 	},
 	"example": {
