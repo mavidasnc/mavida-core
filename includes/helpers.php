@@ -56,13 +56,16 @@ if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
 	 * usata da Blocksy per le card categoria in archivio:
 	 * 1) term meta standard WooCommerce "thumbnail_id";
 	 * 2) fallback storico Blocksy dentro "blocksy_taxonomy_meta_options" (chiavi image/icon_image);
-	 * 3) placeholder WooCommerce.
+	 * 3) immagine di default configurata nel pannello del blocco (se impostata);
+	 * 4) placeholder WooCommerce.
 	 *
-	 * @param WP_Term $term Il termine categoria prodotto.
-	 * @param string  $size Nome della dimensione immagine da usare.
+	 * @param WP_Term $term                  Il termine categoria prodotto.
+	 * @param string  $size                  Nome della dimensione immagine da usare.
+	 * @param int     $default_attachment_id ID allegato da usare se la categoria non ha
+	 *                                        un'immagine propria (0 = nessuna immagine di default).
 	 * @return string Markup HTML gia' pronto per l'output (le funzioni WP usate escapano gia').
 	 */
-	function mavida_core_get_category_image_html( WP_Term $term, $size = 'woocommerce_thumbnail' ) {
+	function mavida_core_get_category_image_html( WP_Term $term, $size = 'woocommerce_thumbnail', $default_attachment_id = 0 ) {
 		$attachment_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
 
 		// Fallback: vecchie installazioni Blocksy possono avere l'immagine solo dentro le opzioni del termine.
@@ -76,6 +79,11 @@ if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
 					$attachment_id = (int) $maybe_image['attachment_id'];
 				}
 			}
+		}
+
+		// Nessuna immagine propria: usa quella di default configurata nel blocco, se presente.
+		if ( ! $attachment_id && $default_attachment_id > 0 ) {
+			$attachment_id = $default_attachment_id;
 		}
 
 		if ( $attachment_id ) {

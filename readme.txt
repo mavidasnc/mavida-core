@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,11 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.8.0 =
+* CSS personalizzato per singola istanza del blocco: pulsante "Personalizza CSS" apre una modale con evidenziazione sintattica (CodeMirror), precompilata col CSS di default, con pulsanti "Ripristina default" e "Salva CSS".
+* Immagine di default (dalla media library) per le categorie senza immagine propria.
+* I colori della CTA sono ora dentro l'accordion "Call to action", non più in un pannello separato.
 
 = 1.7.0 =
 * Nuova opzione "categorie da includere" (priorità assoluta su "escludi", ordine di visualizzazione preservato).

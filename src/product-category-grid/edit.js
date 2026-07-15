@@ -4,8 +4,15 @@
  * render.php usato in frontend: editor e frontend mostrano sempre lo stesso risultato.
  */
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from '@wordpress/element';
-import { useBlockProps, InspectorControls, PanelColorSettings } from '@wordpress/block-editor';
+import { useState, useEffect, useRef } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
+import {
+	useBlockProps,
+	InspectorControls,
+	PanelColorSettings,
+	MediaUpload,
+	MediaUploadCheck,
+} from '@wordpress/block-editor';
 import {
 	PanelBody,
 	RangeControl,
@@ -13,6 +20,9 @@ import {
 	TextControl,
 	ToggleControl,
 	FormTokenField,
+	ColorPalette,
+	BaseControl,
+	Modal,
 	Button,
 	Notice,
 	Spinner,
@@ -33,6 +43,89 @@ const NAME_TAG_OPTIONS = [
 	{ label: 'Span', value: 'span' },
 ];
 
+/**
+ * Copia leggibile del CSS di default del blocco (vedi src/product-category-grid/style.scss).
+ * Usata per precompilare/ripristinare la modale "Personalizza CSS": NON e' generata
+ * automaticamente dal build, va aggiornata a mano se cambia lo SCSS (segnalato anche li').
+ * "%SCOPE%" viene sostituito con l'id univoco di questa istanza del blocco, cosi' il CSS
+ * mostrato (e quindi quello che l'utente modifica) e' gia' isolato a questa sola griglia.
+ */
+const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cat-grid__items {
+	display: grid;
+	grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
+	gap: 1rem;
+}
+
+@media ( max-width: 782px ) {
+	%SCOPE% .mavida-cat-grid__items {
+		grid-template-columns: repeat( var( --mv-columns-mobile, 2 ), minmax( 0, 1fr ) );
+	}
+}
+
+%SCOPE% .mavida-cat-grid__item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	text-decoration: none;
+	color: inherit;
+	background: var( --mv-card-bg, #fff );
+	border: 1px solid rgba( 0, 0, 0, 0.08 );
+	border-radius: var( --mv-card-radius, 12px );
+	padding: var( --mv-card-padding, 1rem );
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+%SCOPE% .mavida-cat-grid__item:hover {
+	transform: translateY( -3px );
+	box-shadow: 0 6px 16px rgba( 0, 0, 0, 0.08 ), 0 20px 50px rgba( 0, 0, 0, 0.06 );
+	border-color: transparent;
+}
+
+%SCOPE% .mavida-cat-grid__name {
+	display: block;
+	font-weight: 600;
+	text-align: center;
+	margin: 0;
+}
+
+%SCOPE% img {
+	width: 100%;
+	height: auto;
+	display: block;
+	border-radius: calc( var( --mv-card-radius, 12px ) - 4px );
+}
+
+%SCOPE% .mavida-cat-grid__cta {
+	display: inline-block;
+	align-self: center;
+	margin-top: 0.25rem;
+	color: inherit;
+}
+
+%SCOPE% .mavida-cat-grid__cta--button {
+	padding: 0.5rem 1.25rem;
+	border-radius: var( --mv-card-radius, 12px );
+	background: #1a1a1a;
+	color: #fff;
+	transition: filter 0.2s ease;
+}
+
+%SCOPE% .mavida-cat-grid__item:hover .mavida-cat-grid__cta--button {
+	filter: brightness( 0.9 );
+}
+`;
+
+/**
+ * Genera un id breve e sufficientemente univoco per ancorare il CSS personalizzato a
+ * questa specifica istanza del blocco (non serve crittograficamente sicuro, solo stabile
+ * e improbabile da collidere tra le poche istanze di uno stesso blocco su una pagina).
+ *
+ * @return {string} Id, es. "mv3f8a1c2d".
+ */
+function generateCssInstanceId() {
+	return 'mv' + Math.random().toString( 36 ).slice( 2, 10 );
+}
+
 export default function Edit( { attributes, setAttributes } ) {
 	const {
 		columns,
@@ -51,8 +144,27 @@ export default function Edit( { attributes, setAttributes } ) {
 		ctaTextColor,
 		ctaBackgroundColor,
 		ctaFontSize,
+		defaultImageId,
+		customCss,
+		cssInstanceId,
 	} = attributes;
 	const blockProps = useBlockProps();
+
+	// L'id istanza serve ad ancorare il CSS personalizzato solo a questo blocco: generato una
+	// sola volta (se non presente) e poi stabile, perche' salvato come attributo.
+	useEffect( () => {
+		if ( ! cssInstanceId ) {
+			setAttributes( { cssInstanceId: generateCssInstanceId() } );
+		}
+	}, [] );
+
+	// Dati dell'allegato scelto come immagine di default, per mostrarne l'anteprima (lo stesso
+	// pattern usato dai blocchi nativi Immagine/Copertina): l'attributo salva solo l'ID, non
+	// basta a costruire un'anteprima senza recuperare anche url/alt dell'allegato.
+	const defaultImageMedia = useSelect(
+		( select ) => ( defaultImageId ? select( 'core' ).getMedia( defaultImageId ) : null ),
+		[ defaultImageId ]
+	);
 
 	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco
 	// (vedi includes/block-cache.php) tramite l'endpoint REST mavida-core/v1/purge-cache.
@@ -73,6 +185,71 @@ export default function Edit( { attributes, setAttributes } ) {
 			.finally( () => {
 				setIsPurgingCache( false );
 			} );
+	}
+
+	// Modale "Personalizza CSS": la textarea viene agganciata a CodeMirror (gia' incluso in
+	// WordPress core, stesso meccanismo di Aspetto > Personalizza > CSS aggiuntivo) tramite
+	// window.wp.codeEditor, caricato solo in editor da includes/block-css-editor.php. Se
+	// l'utente ha disattivato l'evidenziazione sintattica nel proprio profilo, quella funzione
+	// non e' disponibile: si degrada a una textarea semplice, senza errori.
+	const [ isCssModalOpen, setIsCssModalOpen ] = useState( false );
+	const cssTextareaRef = useRef( null );
+	const cssEditorRef = useRef( null );
+
+	const defaultCssForThisInstance = DEFAULT_CSS_TEMPLATE.replace(
+		/%SCOPE%/g,
+		cssInstanceId ? '#mavida-cat-grid-' + cssInstanceId : '.mavida-cat-grid'
+	);
+
+	function getCssEditorValue() {
+		return cssEditorRef.current
+			? cssEditorRef.current.codemirror.getValue()
+			: cssTextareaRef.current?.value ?? '';
+	}
+
+	function setCssEditorValue( value ) {
+		if ( cssEditorRef.current ) {
+			cssEditorRef.current.codemirror.setValue( value );
+		} else if ( cssTextareaRef.current ) {
+			cssTextareaRef.current.value = value;
+		}
+	}
+
+	useEffect( () => {
+		if ( ! isCssModalOpen ) {
+			return;
+		}
+
+		if ( window.wp && window.wp.codeEditor && cssTextareaRef.current ) {
+			cssEditorRef.current = window.wp.codeEditor.initialize(
+				cssTextareaRef.current,
+				window.mavidaCoreCssEditorSettings || {}
+			);
+		}
+
+		return () => {
+			if ( cssEditorRef.current ) {
+				cssEditorRef.current.codemirror.toTextArea();
+				cssEditorRef.current = null;
+			}
+		};
+	}, [ isCssModalOpen ] );
+
+	function onOpenCssModal() {
+		setIsCssModalOpen( true );
+	}
+
+	function onCloseCssModal() {
+		setIsCssModalOpen( false );
+	}
+
+	function onResetCss() {
+		setCssEditorValue( defaultCssForThisInstance );
+	}
+
+	function onSaveCss() {
+		setAttributes( { customCss: getCssEditorValue() } );
+		setIsCssModalOpen( false );
 	}
 
 	// Elenco delle categorie prodotto, recuperato dall'endpoint REST del plugin
@@ -224,6 +401,44 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelColorSettings>
 
+				<PanelBody title={ __( 'Immagine di default', 'mavida-core' ) } initialOpen={ false }>
+					<p className="components-base-control__help" style={ { marginTop: 0 } }>
+						{ __( 'Usata al posto del placeholder quando una categoria non ha un\'immagine propria.', 'mavida-core' ) }
+					</p>
+					{ !! defaultImageId && defaultImageMedia && (
+						<img
+							src={ defaultImageMedia.source_url }
+							alt=""
+							style={ { maxWidth: '100%', height: 'auto', display: 'block', marginBottom: '8px' } }
+						/>
+					) }
+					<MediaUploadCheck>
+						<MediaUpload
+							onSelect={ ( media ) => setAttributes( { defaultImageId: media.id } ) }
+							allowedTypes={ [ 'image' ] }
+							value={ defaultImageId }
+							render={ ( { open } ) => (
+								<div style={ { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } }>
+									<Button variant="secondary" onClick={ open }>
+										{ defaultImageId
+											? __( 'Sostituisci immagine', 'mavida-core' )
+											: __( 'Scegli immagine', 'mavida-core' ) }
+									</Button>
+									{ !! defaultImageId && (
+										<Button
+											variant="link"
+											isDestructive
+											onClick={ () => setAttributes( { defaultImageId: 0 } ) }
+										>
+											{ __( 'Rimuovi', 'mavida-core' ) }
+										</Button>
+									) }
+								</div>
+							) }
+						/>
+					</MediaUploadCheck>
+				</PanelBody>
+
 				<PanelColorSettings
 					title={ __( 'Testo categoria', 'mavida-core' ) }
 					initialOpen={ false }
@@ -271,28 +486,56 @@ export default function Edit( { attributes, setAttributes } ) {
 						min={ 10 }
 						max={ 40 }
 					/>
+
+					{ /* Colori CTA: qui invece che in un pannello a parte (PanelColorSettings
+					renderizzerebbe il proprio pannello e non può annidarsi in questo). */ }
+					<BaseControl label={ __( 'Colore testo', 'mavida-core' ) } id="mavida-core-cta-text-color">
+						<ColorPalette
+							value={ ctaTextColor }
+							onChange={ ( value ) => setAttributes( { ctaTextColor: value || '' } ) }
+						/>
+					</BaseControl>
+					{ ctaIsButton && (
+						<BaseControl label={ __( 'Colore sfondo pulsante', 'mavida-core' ) } id="mavida-core-cta-bg-color">
+							<ColorPalette
+								value={ ctaBackgroundColor }
+								onChange={ ( value ) => setAttributes( { ctaBackgroundColor: value || '' } ) }
+							/>
+						</BaseControl>
+					) }
 				</PanelBody>
 
-				<PanelColorSettings
-					title={ __( 'Colori CTA', 'mavida-core' ) }
-					initialOpen={ false }
-					colorSettings={ [
-						{
-							value: ctaTextColor,
-							onChange: ( value ) => setAttributes( { ctaTextColor: value || '' } ),
-							label: __( 'Colore testo', 'mavida-core' ),
-						},
-						...( ctaIsButton
-							? [
-									{
-										value: ctaBackgroundColor,
-										onChange: ( value ) => setAttributes( { ctaBackgroundColor: value || '' } ),
-										label: __( 'Colore sfondo pulsante', 'mavida-core' ),
-									},
-							  ]
-							: [] ),
-					] }
-				/>
+				<PanelBody title={ __( 'CSS personalizzato', 'mavida-core' ) } initialOpen={ false }>
+					<p className="components-base-control__help" style={ { marginTop: 0 } }>
+						{ __( 'Il CSS scritto qui vale solo per questa griglia: le regole di partenza sono già ancorate a questa istanza, non alle altre griglie del sito.', 'mavida-core' ) }
+					</p>
+					<Button variant="secondary" onClick={ onOpenCssModal }>
+						{ __( 'Personalizza CSS', 'mavida-core' ) }
+					</Button>
+
+					{ isCssModalOpen && (
+						<Modal
+							title={ __( 'CSS personalizzato', 'mavida-core' ) }
+							onRequestClose={ onCloseCssModal }
+							className="mavida-core-css-modal"
+						>
+							<textarea
+								ref={ cssTextareaRef }
+								defaultValue={ customCss || defaultCssForThisInstance }
+								rows={ 20 }
+								style={ { width: '100%', fontFamily: 'monospace' } }
+							/>
+							<div style={ { display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' } }>
+								<Button variant="tertiary" onClick={ onResetCss }>
+									{ __( 'Ripristina default', 'mavida-core' ) }
+								</Button>
+								<Button variant="primary" onClick={ onSaveCss }>
+									{ __( 'Salva CSS', 'mavida-core' ) }
+								</Button>
+							</div>
+						</Modal>
+					) }
+				</PanelBody>
 
 				<PanelBody title={ __( 'Cache', 'mavida-core' ) } initialOpen={ false }>
 					<TextControl

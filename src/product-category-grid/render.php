@@ -38,6 +38,16 @@ $card_background_color = mavida_core_sanitize_css_color( $attributes['cardBackgr
 $card_border_radius    = isset( $attributes['cardBorderRadius'] ) ? max( 0, (int) $attributes['cardBorderRadius'] ) : 12;
 $card_padding          = isset( $attributes['cardPadding'] ) ? max( 0, (int) $attributes['cardPadding'] ) : 16;
 
+// Immagine di default per le categorie che non ne hanno una propria (scelta dalla media
+// library nel pannello del blocco).
+$default_image_id = isset( $attributes['defaultImageId'] ) ? (int) $attributes['defaultImageId'] : 0;
+
+// CSS personalizzato per-istanza: cssInstanceId identifica in modo univoco questo blocco (dà
+// un ancoraggio stabile al CSS scritto dall'utente), customCss e' il testo scritto nella modale
+// "Personalizza CSS" dell'editor. Nessuno dei due viene stampato se customCss e' vuoto.
+$css_instance_id = isset( $attributes['cssInstanceId'] ) ? sanitize_html_class( (string) $attributes['cssInstanceId'] ) : '';
+$custom_css      = isset( $attributes['customCss'] ) ? (string) $attributes['customCss'] : '';
+
 // Tag HTML del nome categoria, colore e dimensione testo: tutti configurabili dal pannello.
 // Il tag viene validato contro un elenco chiuso: e' l'unico modo sicuro di stamparlo
 // direttamente nel markup (esc_attr non basterebbe a impedire un tag arbitrario).
@@ -106,6 +116,9 @@ if ( $cache_minutes > 0 ) {
 		$cta_font_size,
 		$cta_text_color,
 		$cta_background_color,
+		$default_image_id,
+		$css_instance_id,
+		$custom_css,
 	);
 	$cache_key = 'mavida_core_grid_' . $cache_version . '_' . md5( wp_json_encode( $cache_signature ) );
 
@@ -157,19 +170,25 @@ if ( empty( $categories ) ) {
 
 // Colonne (desktop e mobile), colore di sfondo, arrotondamento e padding delle card,
 // passati come custom property CSS, consumate da style.scss.
-$wrapper_attributes = get_block_wrapper_attributes(
-	array(
-		'class' => 'mavida-cat-grid',
-		'style' => sprintf(
-			'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
-			$columns,
-			$mobile_columns,
-			$card_background_color,
-			$card_border_radius,
-			$card_padding
-		),
-	)
+$wrapper_extra_attributes = array(
+	'class' => 'mavida-cat-grid',
+	'style' => sprintf(
+		'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
+		$columns,
+		$mobile_columns,
+		$card_background_color,
+		$card_border_radius,
+		$card_padding
+	),
 );
+
+// L'id univoco serve solo da ancoraggio al CSS personalizzato: lo si aggiunge solo se serve
+// davvero, per non sporcare il markup con un id vuoto quando non c'e' CSS personalizzato.
+if ( '' !== $css_instance_id && '' !== $custom_css ) {
+	$wrapper_extra_attributes['id'] = 'mavida-cat-grid-' . $css_instance_id;
+}
+
+$wrapper_attributes = get_block_wrapper_attributes( $wrapper_extra_attributes );
 
 ob_start();
 ?>
@@ -185,7 +204,7 @@ ob_start();
 			$context = array(
 				'url'        => is_wp_error( $term_link ) ? '' : esc_url( $term_link ),
 				'name'       => esc_html( $category->name ),
-				'image_html' => mavida_core_get_category_image_html( $category ),
+				'image_html' => mavida_core_get_category_image_html( $category, 'woocommerce_thumbnail', $default_image_id ),
 				'cta_html'   => '' !== $cta_text
 					? sprintf(
 						'<span class="%1$s" style="%2$s">%3$s</span>',
@@ -242,6 +261,16 @@ ob_start();
 	 * @param array     $attributes Attributi del blocco.
 	 */
 	echo apply_filters( 'mavida_core_product_category_grid_after_items', '', $categories, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
+
+	// CSS personalizzato per questa istanza (scritto nella modale "Personalizza CSS" in editor).
+	// wp_strip_all_tags() e' l'unica sanitizzazione applicata: come il CSS aggiuntivo nativo di
+	// WordPress (Aspetto > Personalizza), non e' un sanitizzatore CSS completo ma impedisce la
+	// via di attacco piu' seria (chiusura anticipata di </style> e injection di tag arbitrari).
+	// Stampato solo se l'id di ancoraggio e' presente: senza, il CSS non avrebbe nulla a cui
+	// applicarsi in modo sicuro.
+	if ( '' !== $custom_css && '' !== $css_instance_id ) {
+		printf( '<style>%s</style>', wp_strip_all_tags( $custom_css ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- vedi commento sopra
+	}
 	?>
 </div>
 <?php

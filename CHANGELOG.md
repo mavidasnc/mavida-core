@@ -5,6 +5,25 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.8.0] - 2026-07-07
+
+### Added
+- CSS personalizzato **per singola istanza** del blocco "Griglia categorie prodotto": pulsante
+  "Personalizza CSS" nel pannello che apre una modale con evidenziazione sintattica (CodeMirror,
+  già incluso in WordPress core — stesso meccanismo di Aspetto > Personalizza > CSS aggiuntivo,
+  con fallback automatico a textarea semplice se l'utente ha disattivato l'evidenziazione dal
+  proprio profilo). La textarea si apre precompilata col CSS di default del blocco, già scopato
+  a un id univoco generato per quell'istanza, così le modifiche restano isolate a quella singola
+  griglia. Due pulsanti in basso a destra: "Ripristina default" e "Salva CSS".
+- Immagine di default (scelta dalla media library) per le categorie prodotto che non hanno
+  un'immagine propria, usata al posto del placeholder WooCommerce.
+
+### Changed
+- I colori della CTA (testo, sfondo pulsante) sono ora dentro l'accordion "Call to action",
+  invece che in un pannello "Colori CTA" separato.
+
+[1.8.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.8.0
+
 ## [1.7.0] - 2026-07-07
 
 ### Added

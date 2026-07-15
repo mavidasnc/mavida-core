@@ -6,16 +6,19 @@ Plugin WordPress con funzionalita' core per siti WooCommerce basati su [Blocksy]
 
 - **Blocco Gutenberg "Griglia categorie prodotto"** (`mavida-core/product-category-grid`): mostra le
   categorie prodotto WooCommerce in griglia (solo se WooCommerce e' attivo), con il nome in alto e
-  l'immagine di categoria (gestita da Blocksy tramite il term meta `thumbnail_id`) sotto. Numero di
-  colonne (desktop e mobile, quest'ultimo sotto i 782px), categorie da includere o da escludere (con
-  lo stesso componente nativo di WordPress usato per i tag; se "da includere" e' compilato ha
-  priorita' assoluta e mostra solo quelle, nell'ordine in cui sono state aggiunte), durata della
-  cache, colore di sfondo, padding e arrotondamento degli angoli delle card configurabili dal
-  pannello del blocco; le card hanno una piccola animazione al passaggio del mouse. Il tag HTML del
-  nome categoria (H1-H4, div, span), colore e dimensione sono configurabili. Ogni card puo' mostrare
-  una call to action opzionale (testo libero, dimensione, colori, stile pulsante); non ha un link
-  proprio, eredita il click dell'intera card. Elenco e singole card sono personalizzabili via
-  codice, vedi [Hook per sviluppatori](#hook-per-sviluppatori).
+  l'immagine di categoria (gestita da Blocksy tramite il term meta `thumbnail_id`, con un'immagine
+  di default configurabile dalla media library per le categorie che non ne hanno una propria) sotto.
+  Numero di colonne (desktop e mobile, quest'ultimo sotto i 782px), categorie da includere o da
+  escludere (con lo stesso componente nativo di WordPress usato per i tag; se "da includere" e'
+  compilato ha priorita' assoluta e mostra solo quelle, nell'ordine in cui sono state aggiunte),
+  durata della cache, colore di sfondo, padding e arrotondamento degli angoli delle card configurabili
+  dal pannello del blocco; le card hanno una piccola animazione al passaggio del mouse. Il tag HTML
+  del nome categoria (H1-H4, div, span), colore e dimensione sono configurabili. Ogni card puo'
+  mostrare una call to action opzionale (testo libero, dimensione, colori, stile pulsante); non ha un
+  link proprio, eredita il click dell'intera card. Un pannello "CSS personalizzato" apre una modale
+  con evidenziazione sintattica per scrivere CSS aggiuntivo specifico di quella singola istanza del
+  blocco (vedi [CSS personalizzato](#css-personalizzato)). Elenco e singole card sono personalizzabili
+  via codice, vedi [Hook per sviluppatori](#hook-per-sviluppatori).
 - **Colonne prodotto in Bacheca**: l'elenco prodotti (Prodotti) mostra due colonne aggiuntive,
   "Codice Marelli" e "Codice OE", lette dai relativi meta del prodotto.
 - **Cache del blocco**: il markup del blocco viene salvato in transient per il numero di minuti
@@ -56,6 +59,41 @@ npm run build   # build di produzione (aggiorna build/)
 - PHP 8.1+
 - WooCommerce (per le funzionalita' legate alle categorie prodotto)
 - Tema Blocksy (per la gestione dell'immagine di categoria)
+
+## CSS personalizzato
+
+Il pannello "CSS personalizzato" del blocco apre una modale con una textarea a cui viene
+agganciato CodeMirror — lo stesso editor di codice già incluso in WordPress (Aspetto >
+Personalizza > CSS aggiuntivo usa lo stesso meccanismo), quindi nessuna libreria aggiuntiva. Se
+l'utente ha disattivato l'evidenziazione sintattica dal proprio profilo, la modale mostra una
+semplice textarea, senza errori.
+
+Il CSS scritto è **specifico di quella singola istanza del blocco**, non globale: ogni blocco ha
+un id univoco generato automaticamente (`cssInstanceId`), stampato sul wrapper HTML
+(`id="mavida-cat-grid-{id}"`) solo quando c'è del CSS personalizzato da ancorarci. La textarea si
+apre precompilata con una copia leggibile del CSS di default del blocco, con i selettori già
+anteposti dall'id di quell'istanza (es. `#mavida-cat-grid-mv3f8a1c2 .mavida-cat-grid__item:hover
+{ ... }`): modificando quei selettori il CSS resta isolato a quella griglia; se si aggiungono
+nuove regole con selettori generici (senza l'id), invece, si applicano a tutte le griglie del
+sito, perché le classi `.mavida-cat-grid*` sono condivise.
+
+I due pulsanti in basso: "Ripristina default" riporta il contenuto della textarea al CSS di
+default (senza salvare finché non si preme "Salva CSS" o si conferma chiudendo); "Salva CSS"
+scrive il contenuto nell'attributo `customCss` del blocco e chiude la modale.
+
+**Nota per chi mantiene questo repository:** la copia leggibile del CSS di default mostrata nella
+modale (`DEFAULT_CSS_TEMPLATE` in `src/product-category-grid/edit.js`) **non** è generata
+automaticamente dal build: è una copia scritta a mano, mantenuta in sync manualmente con
+`src/product-category-grid/style.scss`. Se si modificano gli stili di default lì, va aggiornato
+anche il template in `edit.js`, altrimenti "Ripristina default" mostrerebbe un CSS non più
+corrispondente a quello realmente applicato.
+
+**Sicurezza:** il CSS viene stampato in un tag `<style>` con `wp_strip_all_tags()` come unica
+sanitizzazione — lo stesso approccio minimo usato da WordPress per il CSS aggiuntivo del
+Customizer: non è un sanitizzatore CSS completo, ma impedisce la via di attacco più seria
+(chiusura anticipata di `</style>` e injection di tag arbitrari). La funzionalità presuppone lo
+stesso livello di fiducia già richiesto per usare l'editor a blocchi (stesso principio del blocco
+nativo "HTML personalizzato").
 
 ## Hook per sviluppatori
 

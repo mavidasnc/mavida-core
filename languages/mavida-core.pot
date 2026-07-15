@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Mavida Core 1.7.0\n"
+"Project-Id-Version: Mavida Core 1.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mavida-core\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-15T12:06:37+02:00\n"
+"POT-Creation-Date: 2026-07-15T12:56:52+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mavida-core\n"
@@ -99,12 +99,12 @@ msgid "Impossibile controllare gli aggiornamenti. Riprova più tardi."
 msgstr ""
 
 #: includes/settings-page.php:178
-#: src/product-category-grid/edit.js:68
+#: src/product-category-grid/edit.js:180
 msgid "Cache svuotata."
 msgstr ""
 
 #: includes/settings-page.php:179
-#: src/product-category-grid/edit.js:71
+#: src/product-category-grid/edit.js:183
 msgid "Impossibile svuotare la cache. Riprova."
 msgstr ""
 
@@ -117,7 +117,7 @@ msgid "Svuota la cache del blocco \"Griglia categorie prodotto\" su tutto il sit
 msgstr ""
 
 #: includes/settings-page.php:237
-#: src/product-category-grid/edit.js:313
+#: src/product-category-grid/edit.js:556
 msgid "Svuota cache"
 msgstr ""
 
@@ -153,121 +153,158 @@ msgstr ""
 msgid "Impossibile contattare GitHub. Riprova più tardi."
 msgstr ""
 
-#: src/product-category-grid/edit.js:148
+#: src/product-category-grid/edit.js:325
 msgid "Impostazioni griglia"
 msgstr ""
 
-#: src/product-category-grid/edit.js:150
+#: src/product-category-grid/edit.js:327
 msgid "Numero di colonne"
 msgstr ""
 
-#: src/product-category-grid/edit.js:157
+#: src/product-category-grid/edit.js:334
 msgid "Numero di colonne mobile"
 msgstr ""
 
-#: src/product-category-grid/edit.js:158
+#: src/product-category-grid/edit.js:335
 msgid "Colonne mostrate sotto i 782px, indipendenti da quelle desktop."
 msgstr ""
 
-#: src/product-category-grid/edit.js:169
+#: src/product-category-grid/edit.js:346
 msgid "Impossibile caricare l'elenco delle categorie. Ricarica la pagina per riprovare."
 msgstr ""
 
-#: src/product-category-grid/edit.js:176
+#: src/product-category-grid/edit.js:353
 msgid "Categorie da includere"
 msgstr ""
 
-#: src/product-category-grid/edit.js:177
+#: src/product-category-grid/edit.js:354
 msgid "Se compilato, mostra solo queste categorie, nell'ordine in cui le aggiungi qui (ignora \"categorie da escludere\")."
 msgstr ""
 
-#: src/product-category-grid/edit.js:184
+#: src/product-category-grid/edit.js:361
 msgid "Categorie da escludere"
 msgstr ""
 
-#: src/product-category-grid/edit.js:187
+#: src/product-category-grid/edit.js:364
 msgid "Ignorato: \"categorie da includere\" è compilato."
 msgstr ""
 
-#: src/product-category-grid/edit.js:201
+#: src/product-category-grid/edit.js:378
 msgid "Aspetto card"
 msgstr ""
 
-#: src/product-category-grid/edit.js:207
+#: src/product-category-grid/edit.js:384
 msgid "Colore sfondo card"
 msgstr ""
 
-#: src/product-category-grid/edit.js:212
+#: src/product-category-grid/edit.js:389
 msgid "Arrotondamento angoli (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:219
+#: src/product-category-grid/edit.js:396
 msgid "Padding card (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:228
+#: src/product-category-grid/edit.js:404
+msgid "Immagine di default"
+msgstr ""
+
+#: src/product-category-grid/edit.js:406
+msgid "Usata al posto del placeholder quando una categoria non ha un'immagine propria."
+msgstr ""
+
+#: src/product-category-grid/edit.js:424
+msgid "Sostituisci immagine"
+msgstr ""
+
+#: src/product-category-grid/edit.js:425
+msgid "Scegli immagine"
+msgstr ""
+
+#: src/product-category-grid/edit.js:433
+msgid "Rimuovi"
+msgstr ""
+
+#: src/product-category-grid/edit.js:443
 msgid "Testo categoria"
 msgstr ""
 
-#: src/product-category-grid/edit.js:234
-#: src/product-category-grid/edit.js:283
+#: src/product-category-grid/edit.js:449
+#: src/product-category-grid/edit.js:492
 msgid "Colore testo"
 msgstr ""
 
-#: src/product-category-grid/edit.js:239
+#: src/product-category-grid/edit.js:454
 msgid "Tag HTML"
 msgstr ""
 
-#: src/product-category-grid/edit.js:240
+#: src/product-category-grid/edit.js:455
 msgid "Il tag usato per il nome della categoria (es. H2 se la griglia è il titolo principale della sezione)."
 msgstr ""
 
-#: src/product-category-grid/edit.js:246
-#: src/product-category-grid/edit.js:268
+#: src/product-category-grid/edit.js:461
+#: src/product-category-grid/edit.js:483
 msgid "Dimensione testo (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:254
+#: src/product-category-grid/edit.js:469
 msgid "Call to action"
 msgstr ""
 
-#: src/product-category-grid/edit.js:256
+#: src/product-category-grid/edit.js:471
 msgid "Testo (vuoto = nessuna CTA)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:257
+#: src/product-category-grid/edit.js:472
 msgid "Comparirà dentro ogni card categoria, senza link proprio: il click resta quello dell'intera card."
 msgstr ""
 
-#: src/product-category-grid/edit.js:260
+#: src/product-category-grid/edit.js:475
 msgid "Es. Vedi prodotti"
 msgstr ""
 
-#: src/product-category-grid/edit.js:263
+#: src/product-category-grid/edit.js:478
 msgid "Mostra come pulsante"
 msgstr ""
 
-#: src/product-category-grid/edit.js:277
-msgid "Colori CTA"
-msgstr ""
-
-#: src/product-category-grid/edit.js:290
+#: src/product-category-grid/edit.js:499
 msgid "Colore sfondo pulsante"
 msgstr ""
 
-#: src/product-category-grid/edit.js:297
+#: src/product-category-grid/edit.js:508
+#: src/product-category-grid/edit.js:518
+msgid "CSS personalizzato"
+msgstr ""
+
+#: src/product-category-grid/edit.js:510
+msgid "Il CSS scritto qui vale solo per questa griglia: le regole di partenza sono già ancorate a questa istanza, non alle altre griglie del sito."
+msgstr ""
+
+#: src/product-category-grid/edit.js:513
+msgid "Personalizza CSS"
+msgstr ""
+
+#: src/product-category-grid/edit.js:530
+msgid "Ripristina default"
+msgstr ""
+
+#: src/product-category-grid/edit.js:533
+msgid "Salva CSS"
+msgstr ""
+
+#: src/product-category-grid/edit.js:540
 msgid "Cache"
 msgstr ""
 
-#: src/product-category-grid/edit.js:301
+#: src/product-category-grid/edit.js:544
 msgid "Durata cache (minuti)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:302
+#: src/product-category-grid/edit.js:545
 msgid "Il markup della griglia viene salvato in cache per il numero di minuti indicato. Imposta 0 per disattivare la cache."
 msgstr ""
 
-#: src/product-category-grid/edit.js:316
+#: src/product-category-grid/edit.js:559
 msgid "Svuota la cache di tutte le griglie categorie del sito, non solo di questo blocco."
 msgstr ""
 
