@@ -8,11 +8,10 @@
 		grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
 		gap: 1rem;
 
-		// Sotto i 782px (breakpoint tablet standard di WordPress) si scende a un massimo
-		// di 2 colonne per non stringere troppo le card, ma senza superare il numero
-		// scelto nell'editor: con columns=1 resta a 1 colonna invece di forzarne comunque 2.
+		// Sotto i 782px (breakpoint tablet standard di WordPress) si usa il numero di
+		// colonne mobile scelto nell'editor, indipendente da quello desktop.
 		@media ( max-width: 782px ) {
-			grid-template-columns: repeat( min( var( --mv-columns, 4 ), 2 ), minmax( 0, 1fr ) );
+			grid-template-columns: repeat( var( --mv-columns-mobile, 2 ), minmax( 0, 1fr ) );
 		}
 	}
 
@@ -25,7 +24,7 @@
 		background: var( --mv-card-bg, #fff );
 		border: 1px solid rgba( 0, 0, 0, 0.08 );
 		border-radius: var( --mv-card-radius, 12px );
-		padding: 1rem;
+		padding: var( --mv-card-padding, 1rem );
 		// Piccola animazione al passaggio del mouse (sollevamento + ombra), coerente con
 		// il pattern usato per le card prodotto nelle demo del gruppo Mavida.
 		transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;

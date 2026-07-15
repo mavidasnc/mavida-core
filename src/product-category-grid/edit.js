@@ -36,10 +36,12 @@ const NAME_TAG_OPTIONS = [
 export default function Edit( { attributes, setAttributes } ) {
 	const {
 		columns,
+		mobileColumns,
 		excludedCategories,
 		cacheMinutes,
 		cardBackgroundColor,
 		cardBorderRadius,
+		cardPadding,
 		nameTagName,
 		nameColor,
 		nameFontSize,
@@ -135,6 +137,14 @@ export default function Edit( { attributes, setAttributes } ) {
 						min={ 1 }
 						max={ 8 }
 					/>
+					<RangeControl
+						label={ __( 'Numero di colonne mobile', 'mavida-core' ) }
+						help={ __( 'Colonne mostrate sotto i 782px, indipendenti da quelle desktop.', 'mavida-core' ) }
+						value={ mobileColumns }
+						onChange={ ( value ) => setAttributes( { mobileColumns: value } ) }
+						min={ 1 }
+						max={ 8 }
+					/>
 
 					{ isLoadingCategories && <Spinner /> }
 
@@ -172,6 +182,13 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( value ) => setAttributes( { cardBorderRadius: value } ) }
 						min={ 0 }
 						max={ 40 }
+					/>
+					<RangeControl
+						label={ __( 'Padding card (px)', 'mavida-core' ) }
+						value={ cardPadding }
+						onChange={ ( value ) => setAttributes( { cardPadding: value } ) }
+						min={ 0 }
+						max={ 48 }
 					/>
 				</PanelColorSettings>
 

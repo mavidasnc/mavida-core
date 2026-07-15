@@ -17,15 +17,21 @@ defined( 'ABSPATH' ) || exit;
 $columns = isset( $attributes['columns'] ) ? (int) $attributes['columns'] : 4;
 $columns = max( 1, min( 8, $columns ) );
 
+// Numero di colonne sotto i 782px (breakpoint tablet standard di WordPress), configurabile
+// separatamente dal numero di colonne principale.
+$mobile_columns = isset( $attributes['mobileColumns'] ) ? (int) $attributes['mobileColumns'] : 2;
+$mobile_columns = max( 1, min( 8, $mobile_columns ) );
+
 // Categorie escluse scelte dall'utente nella select dell'editor.
 $excluded_categories = isset( $attributes['excludedCategories'] )
 	? array_map( 'intval', (array) $attributes['excludedCategories'] )
 	: array();
 
-// Aspetto delle card: colore di sfondo e arrotondamento angoli, entrambi configurabili
+// Aspetto delle card: colore di sfondo, arrotondamento angoli e padding, tutti configurabili
 // dal pannello del blocco.
 $card_background_color = mavida_core_sanitize_css_color( $attributes['cardBackgroundColor'] ?? '', '#ffffff' );
 $card_border_radius    = isset( $attributes['cardBorderRadius'] ) ? max( 0, (int) $attributes['cardBorderRadius'] ) : 12;
+$card_padding          = isset( $attributes['cardPadding'] ) ? max( 0, (int) $attributes['cardPadding'] ) : 16;
 
 // Tag HTML del nome categoria, colore e dimensione testo: tutti configurabili dal pannello.
 // Il tag viene validato contro un elenco chiuso: e' l'unico modo sicuro di stamparlo
@@ -81,9 +87,11 @@ if ( $cache_minutes > 0 ) {
 	$cache_version   = (int) get_option( 'mavida_core_cache_version', 1 );
 	$cache_signature = array(
 		$columns,
+		$mobile_columns,
 		$excluded_categories,
 		$card_background_color,
 		$card_border_radius,
+		$card_padding,
 		$name_tag,
 		$name_color,
 		$name_font_size,
@@ -105,6 +113,18 @@ if ( $cache_minutes > 0 ) {
 
 $categories = mavida_core_get_product_categories( array( 'exclude' => $excluded_categories ) );
 
+/**
+ * Filtra l'elenco delle categorie mostrate dalla griglia, subito dopo l'estrazione da
+ * database. Permette di aggiungere, rimuovere o riordinare le categorie via codice,
+ * indipendentemente dalla select "categorie da escludere" nell'editor. Vedi il README del
+ * plugin per un esempio d'uso.
+ *
+ * @param WP_Term[] $categories Elenco delle categorie estratte.
+ * @param array     $attributes Attributi del blocco.
+ * @param WP_Block  $block      Istanza del blocco.
+ */
+$categories = apply_filters( 'mavida_core_product_category_grid_categories', $categories, $attributes, $block );
+
 // Nessuna categoria da mostrare (o WooCommerce non attivo): nessun markup in pagina.
 // Anche l'esito vuoto viene messo in cache, per non ripetere la query ad ogni richiesta.
 if ( empty( $categories ) ) {
@@ -114,16 +134,18 @@ if ( empty( $categories ) ) {
 	return;
 }
 
-// Colonne, colore di sfondo e arrotondamento delle card passati come custom property CSS,
-// consumate da style.scss.
+// Colonne (desktop e mobile), colore di sfondo, arrotondamento e padding delle card,
+// passati come custom property CSS, consumate da style.scss.
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
 		'class' => 'mavida-cat-grid',
 		'style' => sprintf(
-			'--mv-columns:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;',
+			'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
 			$columns,
+			$mobile_columns,
 			$card_background_color,
-			$card_border_radius
+			$card_border_radius,
+			$card_padding
 		),
 	)
 );

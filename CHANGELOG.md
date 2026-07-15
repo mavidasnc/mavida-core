@@ -5,6 +5,21 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.6.0] - 2026-07-07
+
+### Added
+- Numero di colonne mobile (sotto i 782px) configurabile separatamente da quello desktop, con lo
+  stesso controllo `RangeControl` usato per "Numero di colonne" (default 2). La media query in
+  `style.scss` non calcola piu' `min(colonne, 2)`: usa direttamente il valore scelto.
+- Padding delle card (`.mavida-cat-grid__item`) configurabile dal pannello "Aspetto card" (default
+  16px, equivalente al precedente valore fisso di `1rem`).
+- Nuovo filtro `mavida_core_product_category_grid_categories`, applicato subito dopo l'estrazione
+  delle categorie da database in `render.php`: permette di aggiungere, rimuovere o riordinare le
+  categorie mostrate dalla griglia via codice. Documentato nel README con un esempio pratico e le
+  note sull'interazione con la cache del blocco.
+
+[1.6.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.6.0
+
 ## [1.5.0] - 2026-07-07
 
 ### Changed
