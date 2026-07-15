@@ -3,6 +3,8 @@
  * Pagina opzioni "Mavida Core", organizzata a tab:
  * - "Generale": nome della classe CSS a cui agganciare l'iniezione dinamica delle
  *   categorie prodotto nel menu (vedi includes/menu-injection.php);
+ * - "Opzioni": spunta per mostrare/nascondere le colonne prodotto extra in Bacheca
+ *   (vedi includes/product-admin-columns.php);
  * - "Aggiornamenti" (ultima tab): stato dell'auto-update da GitHub e pulsante per
  *   controllare manualmente la presenza di una nuova versione (vedi includes/updater.php).
  *
@@ -63,7 +65,10 @@ if ( ! function_exists( 'mavida_core_register_settings' ) ) {
 			array(
 				'type'              => 'array',
 				'sanitize_callback' => 'mavida_core_sanitize_options',
-				'default'           => array( 'menu_css_class' => MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS ),
+				'default'           => array(
+					'menu_css_class'       => MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS,
+					'show_product_columns' => MAVIDA_CORE_DEFAULT_SHOW_PRODUCT_COLUMNS,
+				),
 			)
 		);
 
@@ -83,6 +88,23 @@ if ( ! function_exists( 'mavida_core_register_settings' ) ) {
 			'mavida-core',
 			'mavida_core_menu_section'
 		);
+
+		add_settings_section(
+			'mavida_core_product_columns_section',
+			__( 'Colonne prodotto extra', 'mavida-core' ),
+			function () {
+				echo '<p>' . esc_html__( 'Mostra le colonne "Codice Marelli" e "Codice OE" nell\'elenco prodotti di Bacheca.', 'mavida-core' ) . '</p>';
+			},
+			'mavida-core-opzioni'
+		);
+
+		add_settings_field(
+			'show_product_columns',
+			__( 'Colonne extra prodotti', 'mavida-core' ),
+			'mavida_core_render_show_product_columns_field',
+			'mavida-core-opzioni',
+			'mavida_core_product_columns_section'
+		);
 	}
 }
 add_action( 'admin_init', 'mavida_core_register_settings' );
@@ -91,19 +113,39 @@ if ( ! function_exists( 'mavida_core_sanitize_options' ) ) {
 	/**
 	 * Sanitizza le opzioni salvate dal form.
 	 *
+	 * Le tab "Generale" e "Opzioni" condividono lo stesso array di opzioni ma inviano
+	 * form separati, ognuno con solo i propri campi: senza sapere quale tab ha inviato
+	 * la richiesta, il campo mancante nell'altro form verrebbe scambiato per un valore
+	 * svuotato/deselezionato, sovrascrivendo silenziosamente quanto salvato dall'altra tab.
+	 * Il campo nascosto "mavida_core_active_tab" (vedi mavida_core_render_settings_page)
+	 * distingue i due casi.
+	 *
 	 * @param array $input Valori grezzi inviati dal form.
 	 * @return array Valori sanitizzati.
 	 */
 	function mavida_core_sanitize_options( $input ) {
-		$class = isset( $input['menu_css_class'] ) ? sanitize_html_class( $input['menu_css_class'] ) : '';
+		$existing   = get_option( 'mavida_core_options', array() );
+		$active_tab = isset( $_POST['mavida_core_active_tab'] ) ? sanitize_key( wp_unslash( $_POST['mavida_core_active_tab'] ) ) : '';
 
-		// Se l'utente svuota il campo o inserisce un valore non valido come classe CSS,
-		// si torna al default invece di lasciare l'iniezione del menu silenziosamente disattivata.
-		if ( '' === $class ) {
-			$class = MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS;
+		if ( 'opzioni' === $active_tab ) {
+			$class        = isset( $existing['menu_css_class'] ) ? $existing['menu_css_class'] : MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS;
+			$show_columns = ! empty( $input['show_product_columns'] );
+		} else {
+			$class = isset( $input['menu_css_class'] ) ? sanitize_html_class( $input['menu_css_class'] ) : '';
+
+			// Se l'utente svuota il campo o inserisce un valore non valido come classe CSS,
+			// si torna al default invece di lasciare l'iniezione del menu silenziosamente disattivata.
+			if ( '' === $class ) {
+				$class = MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS;
+			}
+
+			$show_columns = ! empty( $existing['show_product_columns'] );
 		}
 
-		return array( 'menu_css_class' => $class );
+		return array(
+			'menu_css_class'       => $class,
+			'show_product_columns' => $show_columns,
+		);
 	}
 }
 
@@ -125,6 +167,27 @@ if ( ! function_exists( 'mavida_core_render_menu_css_class_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'mavida_core_render_show_product_columns_field' ) ) {
+	/**
+	 * Stampa la spunta "Visualizza colonne extra su prodotti".
+	 */
+	function mavida_core_render_show_product_columns_field() {
+		$options = get_option( 'mavida_core_options', array() );
+		$checked = ! empty( $options['show_product_columns'] );
+		?>
+		<label>
+			<input
+				type="checkbox"
+				name="mavida_core_options[show_product_columns]"
+				value="1"
+				<?php checked( $checked ); ?>
+			/>
+			<?php esc_html_e( 'Visualizza colonne extra su prodotti', 'mavida-core' ); ?>
+		</label>
+		<?php
+	}
+}
+
 if ( ! function_exists( 'mavida_core_get_settings_tabs' ) ) {
 	/**
 	 * Elenco delle tab della pagina opzioni, nell'ordine in cui vanno mostrate.
@@ -135,6 +198,7 @@ if ( ! function_exists( 'mavida_core_get_settings_tabs' ) ) {
 	function mavida_core_get_settings_tabs() {
 		return array(
 			'generale'      => __( 'Generale', 'mavida-core' ),
+			'opzioni'       => __( 'Opzioni', 'mavida-core' ),
 			'aggiornamenti' => __( 'Aggiornamenti', 'mavida-core' ),
 		);
 	}
@@ -217,8 +281,18 @@ if ( ! function_exists( 'mavida_core_render_settings_page' ) ) {
 			<div class="mavida-core-tab-content" style="margin-top: 20px;">
 				<?php if ( 'aggiornamenti' === $current_tab ) : ?>
 					<?php mavida_core_render_updates_tab(); ?>
+				<?php elseif ( 'opzioni' === $current_tab ) : ?>
+					<form action="options.php" method="post">
+						<input type="hidden" name="mavida_core_active_tab" value="opzioni" />
+						<?php
+						settings_fields( 'mavida_core_settings' );
+						do_settings_sections( 'mavida-core-opzioni' );
+						submit_button();
+						?>
+					</form>
 				<?php else : ?>
 					<form action="options.php" method="post">
+						<input type="hidden" name="mavida_core_active_tab" value="generale" />
 						<?php
 						settings_fields( 'mavida_core_settings' );
 						do_settings_sections( 'mavida-core' );

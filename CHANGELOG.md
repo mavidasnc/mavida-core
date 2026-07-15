@@ -5,6 +5,16 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.9.0] - 2026-07-15
+
+### Added
+- Nuova tab "Opzioni" nella pagina impostazioni (Bacheca > Mavida Core), con la spunta
+  "Visualizza colonne extra su prodotti" (disattivata di default). Controlla la visibilita' delle
+  colonne "Codice Marelli" e "Codice OE" nell'elenco prodotti di Bacheca (`edit.php?post_type=product`),
+  introdotte nella 1.5.0 e finora sempre visibili incondizionatamente.
+
+[1.9.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.9.0
+
 ## [1.8.0] - 2026-07-07
 
 ### Added

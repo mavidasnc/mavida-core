@@ -3,7 +3,7 @@
  * Plugin Name:       Mavida Core
  * Plugin URI:        https://github.com/mavidasnc/mavida-core
  * Description:       Funzionalita' core Mavida per WooCommerce/Blocksy: blocco griglia categorie, menu dinamico, opzioni.
- * Version:           1.8.0
+ * Version:           1.9.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            MAVIDA
@@ -36,6 +36,10 @@ unset( $mavida_core_plugin_data );
 // usata sia all'attivazione sia nella pagina opzioni (register_setting e sanitizzazione).
 define( 'MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS', 'mavida-product-cats' );
 
+// Valore di default della visibilita' delle colonne prodotto extra (tab "Opzioni"):
+// disattivate finche' non abilitate esplicitamente.
+define( 'MAVIDA_CORE_DEFAULT_SHOW_PRODUCT_COLUMNS', false );
+
 // Azione del nonce usato dalle chiamate AJAX della pagina opzioni (tab Aggiornamenti):
 // creato in includes/settings-page.php, verificato in includes/updater.php.
 define( 'MAVIDA_CORE_ADMIN_NONCE_ACTION', 'mavida_core_admin_nonce' );
@@ -62,7 +66,8 @@ register_activation_hook(
 		add_option(
 			'mavida_core_options',
 			array(
-				'menu_css_class' => MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS,
+				'menu_css_class'       => MAVIDA_CORE_DEFAULT_MENU_CSS_CLASS,
+				'show_product_columns' => MAVIDA_CORE_DEFAULT_SHOW_PRODUCT_COLUMNS,
 			)
 		);
 	}

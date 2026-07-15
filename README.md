@@ -19,8 +19,10 @@ Plugin WordPress con funzionalita' core per siti WooCommerce basati su [Blocksy]
   con evidenziazione sintattica per scrivere CSS aggiuntivo specifico di quella singola istanza del
   blocco (vedi [CSS personalizzato](#css-personalizzato)). Elenco e singole card sono personalizzabili
   via codice, vedi [Hook per sviluppatori](#hook-per-sviluppatori).
-- **Colonne prodotto in Bacheca**: l'elenco prodotti (Prodotti) mostra due colonne aggiuntive,
-  "Codice Marelli" e "Codice OE", lette dai relativi meta del prodotto.
+- **Colonne prodotto in Bacheca**: l'elenco prodotti (Prodotti) puo' mostrare due colonne aggiuntive,
+  "Codice Marelli" e "Codice OE", lette dai relativi meta del prodotto. Disattivate di default,
+  attivabili con la spunta "Visualizza colonne extra su prodotti" nella tab "Opzioni" della pagina
+  impostazioni (Bacheca > Mavida Core).
 - **Cache del blocco**: il markup del blocco viene salvato in transient per il numero di minuti
   impostato nel pannello (0 per disattivarla), con un pulsante "Svuota cache" che la invalida — sia
   nel pannello del blocco sia nella pagina opzioni (Bacheca > Mavida Core > Generale), con lo stesso

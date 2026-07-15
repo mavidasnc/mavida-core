@@ -24,6 +24,20 @@ if ( ! function_exists( 'mavida_core_get_css_class' ) ) {
 	}
 }
 
+if ( ! function_exists( 'mavida_core_show_product_columns' ) ) {
+	/**
+	 * Indica se le colonne prodotto extra (Codice Marelli, Codice OE) vanno mostrate
+	 * nell'elenco prodotti di Bacheca, in base all'opzione della tab "Opzioni".
+	 *
+	 * @return bool
+	 */
+	function mavida_core_show_product_columns() {
+		$options = get_option( 'mavida_core_options', array() );
+
+		return ! empty( $options['show_product_columns'] );
+	}
+}
+
 if ( ! function_exists( 'mavida_core_get_product_categories' ) ) {
 	/**
 	 * Wrapper su get_terms() per le categorie prodotto WooCommerce.

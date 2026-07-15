@@ -3,6 +3,8 @@
  * Aggiunge due colonne nell'elenco prodotti di Bacheca (edit.php?post_type=product):
  * "Codice Marelli" e "Codice OE", lette dai meta prodotto omonimi (campi custom
  * "codice_marelli" e "codice_oe", distinti da SKU e GTIN nativi di WooCommerce).
+ * Visibili solo se l'opzione "Visualizza colonne extra su prodotti" (tab "Opzioni"
+ * della pagina impostazioni) e' attiva, vedi mavida_core_show_product_columns().
  *
  * @package Mavida_Core
  */
@@ -17,6 +19,11 @@ if ( ! function_exists( 'mavida_core_add_product_columns' ) ) {
 	 * @return array
 	 */
 	function mavida_core_add_product_columns( $columns ) {
+		// Colonne extra disattivabili dalla tab "Opzioni" della pagina impostazioni.
+		if ( ! mavida_core_show_product_columns() ) {
+			return $columns;
+		}
+
 		$new_columns = array();
 
 		foreach ( $columns as $key => $label ) {
