@@ -1,7 +1,9 @@
 /**
  * Script della pagina opzioni "Mavida Core": gestisce il pulsante "Controlla
  * aggiornamenti" della tab Aggiornamenti, tramite una chiamata AJAX classica
- * (admin-ajax.php), coerente con l'handler PHP in includes/updater.php.
+ * (admin-ajax.php), coerente con l'handler PHP in includes/updater.php; e il
+ * pulsante "Svuota cache" della tab Generale, tramite l'endpoint REST gia'
+ * usato dal pannello del blocco (includes/block-cache.php).
  */
 ( function ( $ ) {
 	'use strict';
@@ -93,5 +95,47 @@
 		} );
 	}
 
-	$( initUpdatesTab );
+	/**
+	 * Collega il pulsante "Svuota cache" della tab Generale all'endpoint REST
+	 * mavida-core/v1/purge-cache (stesso endpoint del pulsante nel pannello del blocco).
+	 */
+	function initGridCachePurge() {
+		var $btn = $( '#mavida-core-purge-grid-cache' );
+
+		if ( ! $btn.length ) {
+			return;
+		}
+
+		var i18n = ( window.mavidaCoreAdmin && mavidaCoreAdmin.i18n ) ? mavidaCoreAdmin.i18n : {};
+		var $status = $( '#mavida-core-purge-grid-cache-status' );
+
+		$btn.on( 'click', function () {
+			$btn.prop( 'disabled', true );
+			$status.text( '' );
+
+			fetch( mavidaCoreAdmin.restUrl, {
+				method: 'POST',
+				headers: {
+					'X-WP-Nonce': mavidaCoreAdmin.restNonce,
+				},
+			} )
+				.then( function ( response ) {
+					return response.ok ? response.json() : Promise.reject();
+				} )
+				.then( function () {
+					$status.text( i18n.cachePurged || '' );
+				} )
+				.catch( function () {
+					$status.text( i18n.cachePurgeError || '' );
+				} )
+				.finally( function () {
+					$btn.prop( 'disabled', false );
+				} );
+		} );
+	}
+
+	$( function () {
+		initUpdatesTab();
+		initGridCachePurge();
+	} );
 } )( jQuery );

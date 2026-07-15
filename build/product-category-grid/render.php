@@ -27,6 +27,11 @@ $excluded_categories = isset( $attributes['excludedCategories'] )
 	? array_map( 'intval', (array) $attributes['excludedCategories'] )
 	: array();
 
+// Categorie da includere: se non vuoto, ha priorita' assoluta su "escludi" (vedi piu' sotto).
+$included_categories = isset( $attributes['includedCategories'] )
+	? array_map( 'intval', (array) $attributes['includedCategories'] )
+	: array();
+
 // Aspetto delle card: colore di sfondo, arrotondamento angoli e padding, tutti configurabili
 // dal pannello del blocco.
 $card_background_color = mavida_core_sanitize_css_color( $attributes['cardBackgroundColor'] ?? '', '#ffffff' );
@@ -89,6 +94,7 @@ if ( $cache_minutes > 0 ) {
 		$columns,
 		$mobile_columns,
 		$excluded_categories,
+		$included_categories,
 		$card_background_color,
 		$card_border_radius,
 		$card_padding,
@@ -111,13 +117,28 @@ if ( $cache_minutes > 0 ) {
 	}
 }
 
-$categories = mavida_core_get_product_categories( array( 'exclude' => $excluded_categories ) );
+if ( ! empty( $included_categories ) ) {
+	// "categorie da includere" ha priorita' assoluta su "escludi" (ignorato in questo caso).
+	// get_terms(['include' => $ids]) non garantirebbe l'ordine di $ids: si recupera un
+	// termine alla volta, nell'ordine esatto scelto in editor (FormTokenField preserva
+	// l'ordine di inserimento dei token).
+	$categories = array();
+	foreach ( $included_categories as $included_term_id ) {
+		$included_term = get_term( $included_term_id, 'product_cat' );
+		if ( $included_term instanceof WP_Term ) {
+			$categories[] = $included_term;
+		}
+	}
+	unset( $included_term_id, $included_term );
+} else {
+	$categories = mavida_core_get_product_categories( array( 'exclude' => $excluded_categories ) );
+}
 
 /**
  * Filtra l'elenco delle categorie mostrate dalla griglia, subito dopo l'estrazione da
  * database. Permette di aggiungere, rimuovere o riordinare le categorie via codice,
- * indipendentemente dalla select "categorie da escludere" nell'editor. Vedi il README del
- * plugin per un esempio d'uso.
+ * indipendentemente dalle select "categorie da includere/escludere" nell'editor. Vedi il
+ * README del plugin per un esempio d'uso.
  *
  * @param WP_Term[] $categories Elenco delle categorie estratte.
  * @param array     $attributes Attributi del blocco.
@@ -154,25 +175,74 @@ ob_start();
 ?>
 <div <?php echo $wrapper_attributes; ?>>
 	<div class="mavida-cat-grid__items">
-		<?php foreach ( $categories as $category ) : ?>
-			<a class="mavida-cat-grid__item" href="<?php echo esc_url( get_term_link( $category ) ); ?>">
-				<?php
-				printf(
-					'<%1$s class="mavida-cat-grid__name" style="%2$s">%3$s</%1$s>',
-					esc_attr( $name_tag ),
-					esc_attr( $name_style ),
-					esc_html( $category->name )
-				);
-				?>
-				<?php echo mavida_core_get_category_image_html( $category ); ?>
-				<?php if ( '' !== $cta_text ) : ?>
-					<span class="<?php echo esc_attr( $cta_classes ); ?>" style="<?php echo esc_attr( $cta_style ); ?>">
-						<?php echo esc_html( $cta_text ); ?>
-					</span>
-				<?php endif; ?>
-			</a>
-		<?php endforeach; ?>
+		<?php
+		foreach ( $categories as $category ) {
+			$term_link = get_term_link( $category );
+
+			// Contesto pre-calcolato: valori gia' pronti per l'output (escapati dove serve),
+			// cosi' un filtro puo' sovrascrivere una singola card (es. l'immagine di una
+			// categoria che non ne ha) senza dover rifare query.
+			$context = array(
+				'url'        => is_wp_error( $term_link ) ? '' : esc_url( $term_link ),
+				'name'       => esc_html( $category->name ),
+				'image_html' => mavida_core_get_category_image_html( $category ),
+				'cta_html'   => '' !== $cta_text
+					? sprintf(
+						'<span class="%1$s" style="%2$s">%3$s</span>',
+						esc_attr( $cta_classes ),
+						esc_attr( $cta_style ),
+						esc_html( $cta_text )
+					)
+					: '',
+			);
+
+			/**
+			 * Filtra il contesto di una singola card, PRIMA che il markup venga assemblato.
+			 * Utile per sovrascrivere immagine/nome/CTA di una categoria specifica senza
+			 * toccare il database. Vedi il README del plugin per un esempio d'uso.
+			 *
+			 * @param array   $context    url, name, image_html, cta_html (gia' pronti per l'output).
+			 * @param WP_Term $category   Il termine categoria corrente.
+			 * @param array   $attributes Attributi del blocco.
+			 */
+			$context = apply_filters( 'mavida_core_product_category_grid_item_context', $context, $category, $attributes );
+
+			$card_html = sprintf(
+				'<a class="mavida-cat-grid__item" href="%1$s"><%2$s class="mavida-cat-grid__name" style="%3$s">%4$s</%2$s>%5$s%6$s</a>',
+				$context['url'],
+				esc_attr( $name_tag ),
+				esc_attr( $name_style ),
+				$context['name'],
+				$context['image_html'],
+				$context['cta_html']
+			);
+
+			/**
+			 * Filtra l'HTML completo di una singola card, dopo l'assemblaggio. Permette di
+			 * sostituire, avvolgere o accodare markup all'intera card. Vedi il README del
+			 * plugin per un esempio d'uso.
+			 *
+			 * @param string  $card_html  Markup HTML della card.
+			 * @param WP_Term $category   Il termine categoria corrente.
+			 * @param array   $context    Il contesto (eventualmente gia' filtrato).
+			 * @param array   $attributes Attributi del blocco.
+			 */
+			echo apply_filters( 'mavida_core_product_category_grid_item_html', $card_html, $category, $context, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
+		}
+		unset( $category, $term_link, $context, $card_html );
+		?>
 	</div>
+	<?php
+	/**
+	 * Filtra l'HTML stampato subito dopo la griglia di card, dentro il wrapper del blocco.
+	 * Vedi il README del plugin per un esempio d'uso (es. una CTA globale sotto la griglia).
+	 *
+	 * @param string    $html       Vuoto di default.
+	 * @param WP_Term[] $categories Le categorie mostrate.
+	 * @param array     $attributes Attributi del blocco.
+	 */
+	echo apply_filters( 'mavida_core_product_category_grid_after_items', '', $categories, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
+	?>
 </div>
 <?php
 $html = ob_get_clean();

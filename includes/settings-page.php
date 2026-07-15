@@ -163,14 +163,20 @@ if ( ! function_exists( 'mavida_core_enqueue_admin_assets' ) ) {
 			'mavida-core-admin',
 			'mavidaCoreAdmin',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( MAVIDA_CORE_ADMIN_NONCE_ACTION ),
-				'i18n'    => array(
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( MAVIDA_CORE_ADMIN_NONCE_ACTION ),
+				// Usati dal pulsante "Svuota cache" della tab Generale, che chiama
+				// direttamente l'endpoint REST invece di admin-ajax.php.
+				'restUrl'    => rest_url( 'mavida-core/v1/purge-cache' ),
+				'restNonce'  => wp_create_nonce( 'wp_rest' ),
+				'i18n'       => array(
 					'checkingUpdate'  => __( 'Controllo aggiornamenti in corso…', 'mavida-core' ),
 					'upToDate'        => __( 'Il plugin è già aggiornato all\'ultima versione.', 'mavida-core' ),
 					/* translators: %s: numero della versione disponibile, es. "1.4.0". */
 					'updateAvailable' => __( 'È disponibile una nuova versione: %s', 'mavida-core' ),
 					'errorCheck'      => __( 'Impossibile controllare gli aggiornamenti. Riprova più tardi.', 'mavida-core' ),
+					'cachePurged'     => __( 'Cache svuotata.', 'mavida-core' ),
+					'cachePurgeError' => __( 'Impossibile svuotare la cache. Riprova.', 'mavida-core' ),
 				),
 			)
 		);
@@ -219,6 +225,19 @@ if ( ! function_exists( 'mavida_core_render_settings_page' ) ) {
 						submit_button();
 						?>
 					</form>
+
+					<hr />
+
+					<h2><?php esc_html_e( 'Cache griglia categorie', 'mavida-core' ); ?></h2>
+					<p class="description">
+						<?php esc_html_e( 'Svuota la cache del blocco "Griglia categorie prodotto" su tutto il sito, per tutte le sue istanze (stesso effetto del pulsante "Svuota cache" nel pannello del blocco).', 'mavida-core' ); ?>
+					</p>
+					<p>
+						<button type="button" class="button" id="mavida-core-purge-grid-cache">
+							<?php esc_html_e( 'Svuota cache', 'mavida-core' ); ?>
+						</button>
+						<span id="mavida-core-purge-grid-cache-status" style="margin-left: 10px;"></span>
+					</p>
 				<?php endif; ?>
 			</div>
 		</div>

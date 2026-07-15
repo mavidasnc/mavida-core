@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,11 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.7.0 =
+* Nuova opzione "categorie da includere" (priorità assoluta su "escludi", ordine di visualizzazione preservato).
+* Tre nuovi filtri per personalizzare la griglia via codice: mavida_core_product_category_grid_item_context (contesto di una card), mavida_core_product_category_grid_item_html (HTML di una card), mavida_core_product_category_grid_after_items (HTML dopo la griglia). Documentati nel README con esempi.
+* Pulsante "Svuota cache" anche nella pagina opzioni (Bacheca > Mavida Core > Generale), oltre a quello nel pannello del blocco.
 
 = 1.6.0 =
 * Numero di colonne mobile configurabile separatamente da quello desktop (default 2).

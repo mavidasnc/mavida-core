@@ -2,14 +2,14 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Mavida Core 1.6.0\n"
+"Project-Id-Version: Mavida Core 1.7.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mavida-core\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-15T10:52:32+02:00\n"
+"POT-Creation-Date: 2026-07-15T12:06:37+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: mavida-core\n"
@@ -18,7 +18,7 @@ msgstr ""
 #: mavida-core.php
 #: includes/settings-page.php:22
 #: includes/settings-page.php:23
-#: includes/settings-page.php:198
+#: includes/settings-page.php:204
 msgid "Mavida Core"
 msgstr ""
 
@@ -80,41 +80,64 @@ msgstr ""
 msgid "Aggiornamenti"
 msgstr ""
 
-#: includes/settings-page.php:169
+#: includes/settings-page.php:173
 msgid "Controllo aggiornamenti in corso…"
 msgstr ""
 
-#: includes/settings-page.php:170
+#: includes/settings-page.php:174
 msgid "Il plugin è già aggiornato all'ultima versione."
 msgstr ""
 
 #. translators: %s: numero della versione disponibile, es. "1.4.0".
-#: includes/settings-page.php:172
+#: includes/settings-page.php:176
 #, php-format
 msgid "È disponibile una nuova versione: %s"
 msgstr ""
 
-#: includes/settings-page.php:173
+#: includes/settings-page.php:177
 msgid "Impossibile controllare gli aggiornamenti. Riprova più tardi."
 msgstr ""
 
+#: includes/settings-page.php:178
+#: src/product-category-grid/edit.js:68
+msgid "Cache svuotata."
+msgstr ""
+
+#: includes/settings-page.php:179
+#: src/product-category-grid/edit.js:71
+msgid "Impossibile svuotare la cache. Riprova."
+msgstr ""
+
+#: includes/settings-page.php:231
+msgid "Cache griglia categorie"
+msgstr ""
+
+#: includes/settings-page.php:233
+msgid "Svuota la cache del blocco \"Griglia categorie prodotto\" su tutto il sito, per tutte le sue istanze (stesso effetto del pulsante \"Svuota cache\" nel pannello del blocco)."
+msgstr ""
+
 #: includes/settings-page.php:237
+#: src/product-category-grid/edit.js:313
+msgid "Svuota cache"
+msgstr ""
+
+#: includes/settings-page.php:256
 msgid "Questo plugin si aggiorna direttamente dalle release GitHub. Usa il pulsante qui sotto per controllare una nuova versione su richiesta; WordPress controlla comunque automaticamente in background."
 msgstr ""
 
-#: includes/settings-page.php:243
+#: includes/settings-page.php:262
 msgid "Versione installata"
 msgstr ""
 
-#: includes/settings-page.php:247
+#: includes/settings-page.php:266
 msgid "Ultima versione"
 msgstr ""
 
-#: includes/settings-page.php:251
+#: includes/settings-page.php:270
 msgid "Repository"
 msgstr ""
 
-#: includes/settings-page.php:261
+#: includes/settings-page.php:280
 msgid "Controlla aggiornamenti"
 msgstr ""
 
@@ -130,121 +153,121 @@ msgstr ""
 msgid "Impossibile contattare GitHub. Riprova più tardi."
 msgstr ""
 
-#: src/product-category-grid/edit.js:67
-msgid "Cache svuotata."
-msgstr ""
-
-#: src/product-category-grid/edit.js:70
-msgid "Impossibile svuotare la cache. Riprova."
-msgstr ""
-
-#: src/product-category-grid/edit.js:132
+#: src/product-category-grid/edit.js:148
 msgid "Impostazioni griglia"
 msgstr ""
 
-#: src/product-category-grid/edit.js:134
+#: src/product-category-grid/edit.js:150
 msgid "Numero di colonne"
 msgstr ""
 
-#: src/product-category-grid/edit.js:141
+#: src/product-category-grid/edit.js:157
 msgid "Numero di colonne mobile"
 msgstr ""
 
-#: src/product-category-grid/edit.js:142
+#: src/product-category-grid/edit.js:158
 msgid "Colonne mostrate sotto i 782px, indipendenti da quelle desktop."
 msgstr ""
 
-#: src/product-category-grid/edit.js:153
+#: src/product-category-grid/edit.js:169
 msgid "Impossibile caricare l'elenco delle categorie. Ricarica la pagina per riprovare."
 msgstr ""
 
-#: src/product-category-grid/edit.js:159
+#: src/product-category-grid/edit.js:176
+msgid "Categorie da includere"
+msgstr ""
+
+#: src/product-category-grid/edit.js:177
+msgid "Se compilato, mostra solo queste categorie, nell'ordine in cui le aggiungi qui (ignora \"categorie da escludere\")."
+msgstr ""
+
+#: src/product-category-grid/edit.js:184
 msgid "Categorie da escludere"
 msgstr ""
 
-#: src/product-category-grid/edit.js:169
+#: src/product-category-grid/edit.js:187
+msgid "Ignorato: \"categorie da includere\" è compilato."
+msgstr ""
+
+#: src/product-category-grid/edit.js:201
 msgid "Aspetto card"
 msgstr ""
 
-#: src/product-category-grid/edit.js:175
+#: src/product-category-grid/edit.js:207
 msgid "Colore sfondo card"
 msgstr ""
 
-#: src/product-category-grid/edit.js:180
+#: src/product-category-grid/edit.js:212
 msgid "Arrotondamento angoli (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:187
+#: src/product-category-grid/edit.js:219
 msgid "Padding card (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:196
+#: src/product-category-grid/edit.js:228
 msgid "Testo categoria"
 msgstr ""
 
-#: src/product-category-grid/edit.js:202
-#: src/product-category-grid/edit.js:251
+#: src/product-category-grid/edit.js:234
+#: src/product-category-grid/edit.js:283
 msgid "Colore testo"
 msgstr ""
 
-#: src/product-category-grid/edit.js:207
+#: src/product-category-grid/edit.js:239
 msgid "Tag HTML"
 msgstr ""
 
-#: src/product-category-grid/edit.js:208
+#: src/product-category-grid/edit.js:240
 msgid "Il tag usato per il nome della categoria (es. H2 se la griglia è il titolo principale della sezione)."
 msgstr ""
 
-#: src/product-category-grid/edit.js:214
-#: src/product-category-grid/edit.js:236
+#: src/product-category-grid/edit.js:246
+#: src/product-category-grid/edit.js:268
 msgid "Dimensione testo (px)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:222
+#: src/product-category-grid/edit.js:254
 msgid "Call to action"
 msgstr ""
 
-#: src/product-category-grid/edit.js:224
+#: src/product-category-grid/edit.js:256
 msgid "Testo (vuoto = nessuna CTA)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:225
+#: src/product-category-grid/edit.js:257
 msgid "Comparirà dentro ogni card categoria, senza link proprio: il click resta quello dell'intera card."
 msgstr ""
 
-#: src/product-category-grid/edit.js:228
+#: src/product-category-grid/edit.js:260
 msgid "Es. Vedi prodotti"
 msgstr ""
 
-#: src/product-category-grid/edit.js:231
+#: src/product-category-grid/edit.js:263
 msgid "Mostra come pulsante"
 msgstr ""
 
-#: src/product-category-grid/edit.js:245
+#: src/product-category-grid/edit.js:277
 msgid "Colori CTA"
 msgstr ""
 
-#: src/product-category-grid/edit.js:258
+#: src/product-category-grid/edit.js:290
 msgid "Colore sfondo pulsante"
 msgstr ""
 
-#: src/product-category-grid/edit.js:265
+#: src/product-category-grid/edit.js:297
 msgid "Cache"
 msgstr ""
 
-#: src/product-category-grid/edit.js:269
+#: src/product-category-grid/edit.js:301
 msgid "Durata cache (minuti)"
 msgstr ""
 
-#: src/product-category-grid/edit.js:270
+#: src/product-category-grid/edit.js:302
 msgid "Il markup della griglia viene salvato in cache per il numero di minuti indicato. Imposta 0 per disattivare la cache."
 msgstr ""
 
-#: src/product-category-grid/edit.js:281
-msgid "Svuota cache"
-msgstr ""
-
-#: src/product-category-grid/edit.js:284
+#: src/product-category-grid/edit.js:316
 msgid "Svuota la cache di tutte le griglie categorie del sito, non solo di questo blocco."
 msgstr ""
 

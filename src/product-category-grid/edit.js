@@ -38,6 +38,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		columns,
 		mobileColumns,
 		excludedCategories,
+		includedCategories,
 		cacheMinutes,
 		cardBackgroundColor,
 		cardBorderRadius,
@@ -126,6 +127,21 @@ export default function Edit( { attributes, setAttributes } ) {
 		setAttributes( { excludedCategories: ids } );
 	}
 
+	// "Categorie da includere": stessa logica di mappatura nome<->id di "escludi". L'ordine
+	// dei token riflette l'ordine di inserimento (FormTokenField non lo altera da solo),
+	// quindi non serve alcun ordinamento aggiuntivo per rispettare l'ordine scelto in editor.
+	const includedCategoryNames = includedCategories
+		.map( ( id ) => categories.find( ( category ) => category.id === id )?.name )
+		.filter( Boolean );
+
+	function onChangeIncludedCategories( tokens ) {
+		const ids = tokens
+			.map( ( token ) => categories.find( ( category ) => category.name === token )?.id )
+			.filter( ( id ) => typeof id === 'number' );
+
+		setAttributes( { includedCategories: ids } );
+	}
+
 	return (
 		<>
 			<InspectorControls>
@@ -155,13 +171,29 @@ export default function Edit( { attributes, setAttributes } ) {
 					) }
 
 					{ ! isLoadingCategories && ! categoriesError && (
-						<FormTokenField
-							label={ __( 'Categorie da escludere', 'mavida-core' ) }
-							value={ excludedCategoryNames }
-							suggestions={ categories.map( ( category ) => category.name ) }
-							onChange={ onChangeExcludedCategories }
-							__experimentalExpandOnFocus
-						/>
+						<>
+							<FormTokenField
+								label={ __( 'Categorie da includere', 'mavida-core' ) }
+								help={ __( 'Se compilato, mostra solo queste categorie, nell\'ordine in cui le aggiungi qui (ignora "categorie da escludere").', 'mavida-core' ) }
+								value={ includedCategoryNames }
+								suggestions={ categories.map( ( category ) => category.name ) }
+								onChange={ onChangeIncludedCategories }
+								__experimentalExpandOnFocus
+							/>
+							<FormTokenField
+								label={ __( 'Categorie da escludere', 'mavida-core' ) }
+								help={
+									includedCategories.length > 0
+										? __( 'Ignorato: "categorie da includere" è compilato.', 'mavida-core' )
+										: undefined
+								}
+								disabled={ includedCategories.length > 0 }
+								value={ excludedCategoryNames }
+								suggestions={ categories.map( ( category ) => category.name ) }
+								onChange={ onChangeExcludedCategories }
+								__experimentalExpandOnFocus
+							/>
+						</>
 					) }
 				</PanelBody>
 

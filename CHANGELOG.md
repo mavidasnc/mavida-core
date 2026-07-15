@@ -5,6 +5,33 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.7.0] - 2026-07-07
+
+### Added
+- Nuova opzione "categorie da includere" per il blocco "Griglia categorie prodotto": se compilata,
+  ha priorità assoluta su "categorie da escludere" e mostra solo le categorie scelte, nell'ordine
+  esatto in cui sono state aggiunte in editor (`FormTokenField`, non `get_terms(include => ...)`,
+  che non garantirebbe l'ordine).
+- Tre nuovi filtri per personalizzare la griglia via codice, in aggiunta al filtro sull'elenco
+  categorie già esistente (`mavida_core_product_category_grid_categories`):
+  - `mavida_core_product_category_grid_item_context`: filtra url/nome/immagine/CTA di una singola
+    card prima che il markup venga assemblato (es. impostare un'immagine per una categoria che non
+    ne ha).
+  - `mavida_core_product_category_grid_item_html`: filtra l'HTML completo di una singola card dopo
+    l'assemblaggio.
+  - `mavida_core_product_category_grid_after_items`: filtra l'HTML stampato subito dopo la griglia,
+    dentro il wrapper del blocco.
+  Tutti e quattro documentati nel README con esempi pratici.
+- Pulsante "Svuota cache" anche nella pagina opzioni (Bacheca > Mavida Core > Generale), con lo
+  stesso effetto sito-wide del pulsante già presente nel pannello del blocco (riusa l'endpoint
+  REST `mavida-core/v1/purge-cache` esistente).
+
+### Fixed
+- Aggiunta una guardia `is_wp_error()` mancante su `get_term_link()` nel render della card (caso
+  limite raro ma reale: tassonomia non pubblica o termine non valido).
+
+[1.7.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.7.0
+
 ## [1.6.0] - 2026-07-07
 
 ### Added

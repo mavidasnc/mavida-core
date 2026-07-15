@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "mavida-core/product-category-grid",
-	"version": "1.6.0",
+	"version": "1.7.0",
 	"title": "Griglia categorie prodotto",
 	"category": "woocommerce",
 	"icon": "grid-view",
@@ -27,6 +27,13 @@
 			"default": 2
 		},
 		"excludedCategories": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "number"
+			}
+		},
+		"includedCategories": {
 			"type": "array",
 			"default": [],
 			"items": {
