@@ -15,6 +15,7 @@ import {
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
+	Placeholder,
 	RangeControl,
 	SelectControl,
 	TextControl,
@@ -32,7 +33,7 @@ import apiFetch from '@wordpress/api-fetch';
 
 import './editor.scss';
 
-// Tag HTML disponibili per il nome della categoria: stesso elenco validato lato server
+// Tag HTML disponibili per il nome del post: stesso elenco validato lato server
 // (vedi allowed_name_tags in render.php).
 const NAME_TAG_OPTIONS = [
 	{ label: 'H1', value: 'h1' },
@@ -44,25 +45,25 @@ const NAME_TAG_OPTIONS = [
 ];
 
 /**
- * Copia leggibile del CSS di default del blocco (vedi src/product-category-grid/style.scss).
+ * Copia leggibile del CSS di default del blocco (vedi src/cpt-post-grid/style.scss).
  * Usata per precompilare/ripristinare la modale "Personalizza CSS": NON e' generata
  * automaticamente dal build, va aggiornata a mano se cambia lo SCSS (segnalato anche li').
  * "%SCOPE%" viene sostituito con l'id univoco di questa istanza del blocco, cosi' il CSS
  * mostrato (e quindi quello che l'utente modifica) e' gia' isolato a questa sola griglia.
  */
-const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cat-grid__items {
+const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cpt-grid__items {
 	display: grid;
 	grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
 	gap: 1rem;
 }
 
 @media ( max-width: 782px ) {
-	%SCOPE% .mavida-cat-grid__items {
+	%SCOPE% .mavida-cpt-grid__items {
 		grid-template-columns: repeat( var( --mv-columns-mobile, 2 ), minmax( 0, 1fr ) );
 	}
 }
 
-%SCOPE% .mavida-cat-grid__item {
+%SCOPE% .mavida-cpt-grid__item {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -75,13 +76,13 @@ const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cat-grid__items {
 	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-%SCOPE% .mavida-cat-grid__item:hover {
+%SCOPE% .mavida-cpt-grid__item:hover {
 	transform: translateY( -3px );
 	box-shadow: 0 6px 16px rgba( 0, 0, 0, 0.08 ), 0 20px 50px rgba( 0, 0, 0, 0.06 );
 	border-color: transparent;
 }
 
-%SCOPE% .mavida-cat-grid__name {
+%SCOPE% .mavida-cpt-grid__name {
 	display: block;
 	font-weight: 600;
 	text-align: center;
@@ -95,14 +96,14 @@ const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cat-grid__items {
 	border-radius: calc( var( --mv-card-radius, 12px ) - 4px );
 }
 
-%SCOPE% .mavida-cat-grid__cta {
+%SCOPE% .mavida-cpt-grid__cta {
 	display: inline-block;
 	align-self: center;
 	margin-top: 0.25rem;
 	color: inherit;
 }
 
-%SCOPE% .mavida-cat-grid__cta--button {
+%SCOPE% .mavida-cpt-grid__cta--button {
 	padding: 0.5rem 1.25rem;
 	border-radius: var( --mv-card-radius, 12px );
 	background: #1a1a1a;
@@ -110,7 +111,7 @@ const DEFAULT_CSS_TEMPLATE = `%SCOPE% .mavida-cat-grid__items {
 	transition: filter 0.2s ease;
 }
 
-%SCOPE% .mavida-cat-grid__item:hover .mavida-cat-grid__cta--button {
+%SCOPE% .mavida-cpt-grid__item:hover .mavida-cpt-grid__cta--button {
 	filter: brightness( 0.9 );
 }
 `;
@@ -126,12 +127,25 @@ function generateCssInstanceId() {
 	return 'mv' + Math.random().toString( 36 ).slice( 2, 10 );
 }
 
+/**
+ * Etichetta usata nei FormTokenField "post da includere/escludere": il titolo da solo non
+ * garantisce l'univocita' del token (due post possono avere lo stesso titolo), l'id in coda
+ * si'.
+ *
+ * @param {Object} post Oggetto post ({ id, title }) restituito dall'endpoint REST.
+ * @return {string} Es. "Titolo del post (#42)".
+ */
+function formatPostToken( post ) {
+	return post.title + ' (#' + post.id + ')';
+}
+
 export default function Edit( { attributes, setAttributes } ) {
 	const {
+		postType,
 		columns,
 		mobileColumns,
-		excludedCategories,
-		includedCategories,
+		excludedPosts,
+		includedPosts,
 		cacheMinutes,
 		cardBackgroundColor,
 		cardBorderColor,
@@ -167,8 +181,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		[ defaultImageId ]
 	);
 
-	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco
-	// (vedi includes/block-cache.php) tramite l'endpoint REST mavida-core/v1/purge-cache.
+	// Stato del pulsante "Svuota cache": invalida la cache server-side del blocco (endpoint
+	// REST condiviso con "Griglia categorie prodotto", vedi includes/block-cache.php).
 	const [ isPurgingCache, setIsPurgingCache ] = useState( false );
 	const [ purgeNotice, setPurgeNotice ] = useState( null );
 
@@ -199,7 +213,7 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const defaultCssForThisInstance = DEFAULT_CSS_TEMPLATE.replace(
 		/%SCOPE%/g,
-		cssInstanceId ? '#mavida-cat-grid-' + cssInstanceId : '.mavida-cat-grid'
+		cssInstanceId ? '#mavida-cpt-grid-' + cssInstanceId : '.mavida-cpt-grid'
 	);
 
 	function getCssEditorValue() {
@@ -253,34 +267,29 @@ export default function Edit( { attributes, setAttributes } ) {
 		setIsCssModalOpen( false );
 	}
 
-	// Elenco delle categorie prodotto, recuperato dall'endpoint REST del plugin
-	// (mavida-core/v1/product-categories) per popolare la select di esclusione.
-	// Endpoint dedicato invece di core-data/getEntityRecords: risposta minima
-	// (id/nome/conteggio) e comportamento indipendente da eventuali filtri
-	// che disabilitassero show_in_rest sulla tassonomia product_cat.
-	const [ categories, setCategories ] = useState( [] );
-	const [ isLoadingCategories, setIsLoadingCategories ] = useState( true );
-	const [ categoriesError, setCategoriesError ] = useState( false );
+	// Elenco dei tipi di contenuto selezionabili, recuperato una sola volta all'apertura
+	// dell'editor (endpoint REST mavida-core/v1/post-types).
+	const [ postTypes, setPostTypes ] = useState( [] );
+	const [ isLoadingPostTypes, setIsLoadingPostTypes ] = useState( true );
+	const [ postTypesError, setPostTypesError ] = useState( false );
 
 	useEffect( () => {
-		// Evita di aggiornare lo stato se il componente e' stato smontato (blocco rimosso)
-		// prima che la richiesta sia completata.
 		let isMounted = true;
 
-		apiFetch( { path: '/mavida-core/v1/product-categories' } )
+		apiFetch( { path: '/mavida-core/v1/post-types' } )
 			.then( ( result ) => {
 				if ( ! isMounted ) {
 					return;
 				}
-				setCategories( result );
-				setIsLoadingCategories( false );
+				setPostTypes( result );
+				setIsLoadingPostTypes( false );
 			} )
 			.catch( () => {
 				if ( ! isMounted ) {
 					return;
 				}
-				setCategoriesError( true );
-				setIsLoadingCategories( false );
+				setPostTypesError( true );
+				setIsLoadingPostTypes( false );
 			} );
 
 		return () => {
@@ -288,42 +297,113 @@ export default function Edit( { attributes, setAttributes } ) {
 		};
 	}, [] );
 
-	// FormTokenField (lo stesso componente usato nativamente da WordPress per il pannello
-	// "Tag" nella barra laterale) lavora con token di testo, non con ID: serve una mappa
-	// bidirezionale nome<->id per tradurre da/verso l'attributo excludedCategories (array di ID).
-	const excludedCategoryNames = excludedCategories
-		.map( ( id ) => categories.find( ( category ) => category.id === id )?.name )
-		.filter( Boolean );
+	// Elenco dei post del tipo di contenuto scelto, per popolare le select di
+	// inclusione/esclusione: si ricarica ad ogni cambio di postType.
+	const [ posts, setPosts ] = useState( [] );
+	const [ isLoadingPosts, setIsLoadingPosts ] = useState( false );
+	const [ postsError, setPostsError ] = useState( false );
 
-	function onChangeExcludedCategories( tokens ) {
-		const ids = tokens
-			.map( ( token ) => categories.find( ( category ) => category.name === token )?.id )
-			// Ignora eventuali token digitati liberamente che non corrispondono a nessuna
-			// categoria esistente: la select deve restare vincolata alle categorie reali.
-			.filter( ( id ) => typeof id === 'number' );
+	useEffect( () => {
+		if ( ! postType ) {
+			setPosts( [] );
+			return;
+		}
 
-		setAttributes( { excludedCategories: ids } );
+		let isMounted = true;
+		setIsLoadingPosts( true );
+		setPostsError( false );
+
+		apiFetch( { path: '/mavida-core/v1/posts?post_type=' + postType } )
+			.then( ( result ) => {
+				if ( ! isMounted ) {
+					return;
+				}
+				setPosts( result );
+				setIsLoadingPosts( false );
+			} )
+			.catch( () => {
+				if ( ! isMounted ) {
+					return;
+				}
+				setPostsError( true );
+				setIsLoadingPosts( false );
+			} );
+
+		return () => {
+			isMounted = false;
+		};
+	}, [ postType ] );
+
+	// Cambiare tipo di contenuto invalida gli ID scelti in precedenza: gli stessi ID non
+	// hanno alcun significato per un CPT diverso.
+	function onChangePostType( value ) {
+		setAttributes( { postType: value, includedPosts: [], excludedPosts: [] } );
 	}
 
-	// "Categorie da includere": stessa logica di mappatura nome<->id di "escludi". L'ordine
-	// dei token riflette l'ordine di inserimento (FormTokenField non lo altera da solo),
-	// quindi non serve alcun ordinamento aggiuntivo per rispettare l'ordine scelto in editor.
-	const includedCategoryNames = includedCategories
-		.map( ( id ) => categories.find( ( category ) => category.id === id )?.name )
+	// FormTokenField (lo stesso componente usato nativamente da WordPress per il pannello
+	// "Tag" nella barra laterale) lavora con token di testo, non con ID: serve una mappa
+	// bidirezionale token<->id per tradurre da/verso gli attributi includedPosts/excludedPosts.
+	// Il token include l'id (vedi formatPostToken) perche' il titolo da solo non garantisce
+	// l'univocita' tra post diversi.
+	const excludedPostTokens = excludedPosts
+		.map( ( id ) => {
+			const post = posts.find( ( candidate ) => candidate.id === id );
+			return post ? formatPostToken( post ) : null;
+		} )
 		.filter( Boolean );
 
-	function onChangeIncludedCategories( tokens ) {
+	function onChangeExcludedPosts( tokens ) {
 		const ids = tokens
-			.map( ( token ) => categories.find( ( category ) => category.name === token )?.id )
+			.map( ( token ) => posts.find( ( post ) => formatPostToken( post ) === token )?.id )
+			// Ignora eventuali token digitati liberamente che non corrispondono a nessun
+			// post esistente: la select deve restare vincolata ai post reali del CPT scelto.
 			.filter( ( id ) => typeof id === 'number' );
 
-		setAttributes( { includedCategories: ids } );
+		setAttributes( { excludedPosts: ids } );
+	}
+
+	// "Post da includere": stessa logica di mappatura token<->id di "escludi". L'ordine dei
+	// token riflette l'ordine di inserimento (FormTokenField non lo altera da solo), quindi
+	// non serve alcun ordinamento aggiuntivo per rispettare l'ordine scelto in editor.
+	const includedPostTokens = includedPosts
+		.map( ( id ) => {
+			const post = posts.find( ( candidate ) => candidate.id === id );
+			return post ? formatPostToken( post ) : null;
+		} )
+		.filter( Boolean );
+
+	function onChangeIncludedPosts( tokens ) {
+		const ids = tokens
+			.map( ( token ) => posts.find( ( post ) => formatPostToken( post ) === token )?.id )
+			.filter( ( id ) => typeof id === 'number' );
+
+		setAttributes( { includedPosts: ids } );
 	}
 
 	return (
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Impostazioni griglia', 'mavida-core' ) }>
+					{ isLoadingPostTypes && <Spinner /> }
+
+					{ ! isLoadingPostTypes && postTypesError && (
+						<Notice status="error" isDismissible={ false }>
+							{ __( "Impossibile caricare l'elenco dei tipi di contenuto. Ricarica la pagina per riprovare.", 'mavida-core' ) }
+						</Notice>
+					) }
+
+					{ ! isLoadingPostTypes && ! postTypesError && (
+						<SelectControl
+							label={ __( 'Tipo di contenuto', 'mavida-core' ) }
+							value={ postType }
+							options={ [
+								{ label: __( '— Seleziona —', 'mavida-core' ), value: '' },
+								...postTypes.map( ( type ) => ( { label: type.label, value: type.slug } ) ),
+							] }
+							onChange={ onChangePostType }
+						/>
+					) }
+
 					<RangeControl
 						label={ __( 'Numero di colonne', 'mavida-core' ) }
 						value={ columns }
@@ -340,35 +420,35 @@ export default function Edit( { attributes, setAttributes } ) {
 						max={ 8 }
 					/>
 
-					{ isLoadingCategories && <Spinner /> }
+					{ postType && isLoadingPosts && <Spinner /> }
 
-					{ ! isLoadingCategories && categoriesError && (
+					{ postType && ! isLoadingPosts && postsError && (
 						<Notice status="error" isDismissible={ false }>
-							{ __( "Impossibile caricare l'elenco delle categorie. Ricarica la pagina per riprovare.", 'mavida-core' ) }
+							{ __( "Impossibile caricare l'elenco dei post. Ricarica la pagina per riprovare.", 'mavida-core' ) }
 						</Notice>
 					) }
 
-					{ ! isLoadingCategories && ! categoriesError && (
+					{ postType && ! isLoadingPosts && ! postsError && (
 						<>
 							<FormTokenField
-								label={ __( 'Categorie da includere', 'mavida-core' ) }
-								help={ __( 'Se compilato, mostra solo queste categorie, nell\'ordine in cui le aggiungi qui (ignora "categorie da escludere").', 'mavida-core' ) }
-								value={ includedCategoryNames }
-								suggestions={ categories.map( ( category ) => category.name ) }
-								onChange={ onChangeIncludedCategories }
+								label={ __( 'Post da includere', 'mavida-core' ) }
+								help={ __( 'Se compilato, mostra solo questi post, nell\'ordine in cui li aggiungi qui (ignora "post da escludere").', 'mavida-core' ) }
+								value={ includedPostTokens }
+								suggestions={ posts.map( formatPostToken ) }
+								onChange={ onChangeIncludedPosts }
 								__experimentalExpandOnFocus
 							/>
 							<FormTokenField
-								label={ __( 'Categorie da escludere', 'mavida-core' ) }
+								label={ __( 'Post da escludere', 'mavida-core' ) }
 								help={
-									includedCategories.length > 0
-										? __( 'Ignorato: "categorie da includere" è compilato.', 'mavida-core' )
+									includedPosts.length > 0
+										? __( 'Ignorato: "post da includere" è compilato.', 'mavida-core' )
 										: undefined
 								}
-								disabled={ includedCategories.length > 0 }
-								value={ excludedCategoryNames }
-								suggestions={ categories.map( ( category ) => category.name ) }
-								onChange={ onChangeExcludedCategories }
+								disabled={ includedPosts.length > 0 }
+								value={ excludedPostTokens }
+								suggestions={ posts.map( formatPostToken ) }
+								onChange={ onChangeExcludedPosts }
 								__experimentalExpandOnFocus
 							/>
 						</>
@@ -410,7 +490,7 @@ export default function Edit( { attributes, setAttributes } ) {
 
 				<PanelBody title={ __( 'Immagine di default', 'mavida-core' ) } initialOpen={ false }>
 					<p className="components-base-control__help" style={ { marginTop: 0 } }>
-						{ __( 'Usata al posto del placeholder quando una categoria non ha un\'immagine propria.', 'mavida-core' ) }
+						{ __( 'Usata al posto del post senza immagine quando non ha un\'immagine in evidenza propria.', 'mavida-core' ) }
 					</p>
 					{ !! defaultImageId && defaultImageMedia && (
 						<img
@@ -447,7 +527,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 
 				<PanelColorSettings
-					title={ __( 'Testo categoria', 'mavida-core' ) }
+					title={ __( 'Testo post', 'mavida-core' ) }
 					initialOpen={ false }
 					colorSettings={ [
 						{
@@ -459,7 +539,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				>
 					<SelectControl
 						label={ __( 'Tag HTML', 'mavida-core' ) }
-						help={ __( 'Il tag usato per il nome della categoria (es. H2 se la griglia è il titolo principale della sezione).', 'mavida-core' ) }
+						help={ __( 'Il tag usato per il titolo del post (es. H2 se la griglia è il titolo principale della sezione).', 'mavida-core' ) }
 						value={ nameTagName }
 						options={ NAME_TAG_OPTIONS }
 						onChange={ ( value ) => setAttributes( { nameTagName: value } ) }
@@ -476,10 +556,10 @@ export default function Edit( { attributes, setAttributes } ) {
 				<PanelBody title={ __( 'Call to action', 'mavida-core' ) } initialOpen={ false }>
 					<TextControl
 						label={ __( 'Testo (vuoto = nessuna CTA)', 'mavida-core' ) }
-						help={ __( 'Comparirà dentro ogni card categoria, senza link proprio: il click resta quello dell\'intera card.', 'mavida-core' ) }
+						help={ __( 'Comparirà dentro ogni card post, senza link proprio: il click resta quello dell\'intera card.', 'mavida-core' ) }
 						value={ ctaText }
 						onChange={ ( value ) => setAttributes( { ctaText: value } ) }
-						placeholder={ __( 'Es. Vedi prodotti', 'mavida-core' ) }
+						placeholder={ __( 'Es. Leggi tutto', 'mavida-core' ) }
 					/>
 					<ToggleControl
 						label={ __( 'Mostra come pulsante', 'mavida-core' ) }
@@ -563,7 +643,7 @@ export default function Edit( { attributes, setAttributes } ) {
 						{ __( 'Svuota cache', 'mavida-core' ) }
 					</Button>
 					<p className="components-base-control__help">
-						{ __( 'Svuota la cache di tutte le griglie categorie del sito, non solo di questo blocco.', 'mavida-core' ) }
+						{ __( 'Svuota la cache di tutte le griglie del sito (categorie prodotto e post per tipo di contenuto), non solo di questo blocco.', 'mavida-core' ) }
 					</p>
 
 					{ purgeNotice && (
@@ -579,10 +659,18 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<div { ...blockProps }>
-				<ServerSideRender
-					block="mavida-core/product-category-grid"
-					attributes={ attributes }
-				/>
+				{ postType ? (
+					<ServerSideRender
+						block="mavida-core/cpt-post-grid"
+						attributes={ attributes }
+					/>
+				) : (
+					<Placeholder
+						icon="grid-view"
+						label={ __( 'Griglia post per tipo di contenuto', 'mavida-core' ) }
+						instructions={ __( 'Scegli un tipo di contenuto dal pannello impostazioni per iniziare.', 'mavida-core' ) }
+					/>
+				) }
 			</div>
 		</>
 	);

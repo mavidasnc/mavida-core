@@ -1,13 +1,13 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "mavida-core/product-category-grid",
-	"version": "1.8.0",
-	"title": "Griglia categorie prodotto",
-	"category": "woocommerce",
+	"name": "mavida-core/cpt-post-grid",
+	"version": "1.10.0",
+	"title": "Griglia post per tipo di contenuto",
+	"category": "widgets",
 	"icon": "grid-view",
-	"description": "Griglia delle categorie prodotto WooCommerce: nome in alto e immagine sotto, con colonne, esclusioni, aspetto card e call to action per card configurabili.",
-	"keywords": [ "woocommerce", "categorie", "prodotti", "griglia" ],
+	"description": "Griglia dei post di un tipo di contenuto (CPT) scelto: nome in alto e immagine sotto, con colonne, esclusioni, aspetto card e call to action per card configurabili.",
+	"keywords": [ "cpt", "post", "griglia", "tipo di contenuto" ],
 	"textdomain": "mavida-core",
 	"supports": {
 		"html": false,
@@ -18,6 +18,10 @@
 		}
 	},
 	"attributes": {
+		"postType": {
+			"type": "string",
+			"default": ""
+		},
 		"columns": {
 			"type": "number",
 			"default": 4
@@ -26,14 +30,14 @@
 			"type": "number",
 			"default": 2
 		},
-		"excludedCategories": {
+		"excludedPosts": {
 			"type": "array",
 			"default": [],
 			"items": {
 				"type": "number"
 			}
 		},
-		"includedCategories": {
+		"includedPosts": {
 			"type": "array",
 			"default": [],
 			"items": {

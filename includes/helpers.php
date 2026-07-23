@@ -125,6 +125,51 @@ if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
 	}
 }
 
+if ( ! function_exists( 'mavida_core_get_post_image_html' ) ) {
+	/**
+	 * Restituisce il markup <img> dell'immagine di un post (blocco "Griglia post per tipo
+	 * di contenuto"): immagine in evidenza propria, oppure l'immagine di default configurata
+	 * nel pannello del blocco se il post non ne ha una.
+	 *
+	 * @param WP_Post $post                  Il post di cui recuperare l'immagine.
+	 * @param string  $size                  Nome della dimensione immagine da usare.
+	 * @param int     $default_attachment_id ID allegato da usare se il post non ha
+	 *                                        un'immagine in evidenza (0 = nessuna immagine di default).
+	 * @return string Markup HTML gia' pronto per l'output (le funzioni WP usate escapano gia'),
+	 *                oppure stringa vuota se nessuna immagine e' disponibile.
+	 */
+	function mavida_core_get_post_image_html( WP_Post $post, $size = 'large', $default_attachment_id = 0 ) {
+		$attachment_id = get_post_thumbnail_id( $post );
+
+		// Nessuna immagine in evidenza propria: usa quella di default configurata nel
+		// blocco, se presente.
+		if ( ! $attachment_id && $default_attachment_id > 0 ) {
+			$attachment_id = $default_attachment_id;
+		}
+
+		if ( $attachment_id ) {
+			$image_html = wp_get_attachment_image(
+				$attachment_id,
+				$size,
+				false,
+				array(
+					'loading' => 'lazy',
+					'alt'     => get_the_title( $post ),
+				)
+			);
+
+			if ( $image_html ) {
+				return $image_html;
+			}
+		}
+
+		// Nessuna immagine trovata: a differenza del blocco categorie prodotto non c'e' un
+		// placeholder generico da usare (wc_placeholder_img() e' specifico WooCommerce),
+		// quindi la card resta semplicemente senza immagine.
+		return '';
+	}
+}
+
 if ( ! function_exists( 'mavida_core_sanitize_css_color' ) ) {
 	/**
 	 * Ripulisce un valore colore proveniente da un attributo del blocco (color picker),

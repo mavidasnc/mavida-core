@@ -1,6 +1,7 @@
 <?php
 /**
- * Registrazione del blocco Gutenberg "Griglia categorie prodotto".
+ * Registrazione dei blocchi Gutenberg del plugin: "Griglia categorie prodotto" e
+ * "Griglia post per tipo di contenuto".
  *
  * @package Mavida_Core
  */
@@ -9,19 +10,21 @@ defined( 'ABSPATH' ) || exit;
 
 if ( ! function_exists( 'mavida_core_register_blocks' ) ) {
 	/**
-	 * Registra il blocco dinamico leggendo i metadati da build/product-category-grid/block.json.
-	 * Il rendering e' delegato al render.php referenziato nel block.json (attributo "render"),
-	 * quindi non serve passare qui un render_callback.
+	 * Registra i blocchi dinamici leggendo i metadati dalle rispettive cartelle build/.
+	 * Il rendering e' delegato al render.php referenziato in ciascun block.json (attributo
+	 * "render"), quindi non serve passare qui un render_callback.
 	 */
 	function mavida_core_register_blocks() {
-		// Il blocco mostra categorie prodotto WooCommerce: senza WooCommerce non avrebbe
-		// nulla da mostrare. Evita di registrarlo per non lasciarlo comparire, vuoto e
-		// confuso, nell'inserimento blocchi.
-		if ( ! class_exists( 'WooCommerce' ) ) {
-			return;
+		// Il blocco "Griglia categorie prodotto" mostra categorie prodotto WooCommerce:
+		// senza WooCommerce non avrebbe nulla da mostrare. Evita di registrarlo per non
+		// lasciarlo comparire, vuoto e confuso, nell'inserimento blocchi.
+		if ( class_exists( 'WooCommerce' ) ) {
+			register_block_type( MAVIDA_CORE_PATH . 'build/product-category-grid' );
 		}
 
-		register_block_type( MAVIDA_CORE_PATH . 'build/product-category-grid' );
+		// Il blocco "Griglia post per tipo di contenuto" lavora sui CPT nativi di WordPress:
+		// nessuna dipendenza da WooCommerce, sempre disponibile.
+		register_block_type( MAVIDA_CORE_PATH . 'build/cpt-post-grid' );
 	}
 }
 add_action( 'init', 'mavida_core_register_blocks' );

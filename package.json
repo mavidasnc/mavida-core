@@ -1,7 +1,7 @@
 {
 	"name": "mavida-core",
-	"version": "1.9.0",
-	"description": "Blocco Gutenberg griglia categorie prodotto per il plugin Mavida Core.",
+	"version": "1.10.0",
+	"description": "Blocchi Gutenberg griglia categorie prodotto / griglia post per CPT per il plugin Mavida Core.",
 	"private": true,
 	"license": "GPL-2.0-or-later",
 	"scripts": {

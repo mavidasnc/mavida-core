@@ -5,6 +5,24 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.10.0] - 2026-07-23
+
+### Added
+- Nuovo blocco Gutenberg dinamico "Griglia post per tipo di contenuto" (`mavida-core/cpt-post-grid`):
+  analogo alla "Griglia categorie prodotto", ma mostra i post di un CPT scelto nel pannello invece
+  delle categorie prodotto WooCommerce. Ogni card corrisponde a un post (titolo, permalink e immagine
+  in evidenza, invece di termine e immagine di tassonomia). Stesse opzioni della griglia categorie:
+  post da includere/escludere (con priorità dell'inclusione e ordine preservato), colonne desktop/mobile,
+  aspetto card, testo e call to action per card, immagine di default, cache con TTL configurabile e
+  pulsante "Svuota cache" (condiviso con l'altro blocco), CSS personalizzato per singola istanza.
+  Nessuna dipendenza da WooCommerce: disponibile su qualunque tipo di contenuto pubblico del sito.
+- Nei blocchi "Griglia categorie prodotto" e "Griglia post per tipo di contenuto", il pannello
+  "Aspetto card" ora supporta l'opacità (canale alpha) sia per il colore di sfondo sia per il nuovo
+  colore del bordo card (`cardBorderColor`), permettendo di rendere card e bordo trasparenti o
+  semi-trasparenti.
+
+[1.10.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.10.0
+
 ## [1.9.0] - 2026-07-15
 
 ### Added

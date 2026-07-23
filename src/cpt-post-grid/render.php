@@ -1,6 +1,6 @@
 <?php
 /**
- * Render lato server della griglia categorie prodotto.
+ * Render lato server della griglia post per tipo di contenuto.
  * Usato sia in frontend sia dall'anteprima ServerSideRender in editor.
  *
  * Variabili disponibili in questo scope, fornite da WordPress:
@@ -13,6 +13,14 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Tipo di contenuto scelto dall'editor: senza un CPT valido e pubblico non c'e' nulla da
+// mostrare (evita anche di esporre CPT privati tramite un attributo manomesso).
+$post_type = isset( $attributes['postType'] ) ? sanitize_key( $attributes['postType'] ) : '';
+
+if ( '' === $post_type || ! post_type_exists( $post_type ) || ! is_post_type_viewable( $post_type ) ) {
+	return;
+}
+
 // Numero di colonne: stesso range 1-8 del RangeControl nell'editor.
 $columns = isset( $attributes['columns'] ) ? (int) $attributes['columns'] : 4;
 $columns = max( 1, min( 8, $columns ) );
@@ -22,14 +30,14 @@ $columns = max( 1, min( 8, $columns ) );
 $mobile_columns = isset( $attributes['mobileColumns'] ) ? (int) $attributes['mobileColumns'] : 2;
 $mobile_columns = max( 1, min( 8, $mobile_columns ) );
 
-// Categorie escluse scelte dall'utente nella select dell'editor.
-$excluded_categories = isset( $attributes['excludedCategories'] )
-	? array_map( 'intval', (array) $attributes['excludedCategories'] )
+// Post esclusi, scelti dall'utente nella select dell'editor.
+$excluded_posts = isset( $attributes['excludedPosts'] )
+	? array_map( 'intval', (array) $attributes['excludedPosts'] )
 	: array();
 
-// Categorie da includere: se non vuoto, ha priorita' assoluta su "escludi" (vedi piu' sotto).
-$included_categories = isset( $attributes['includedCategories'] )
-	? array_map( 'intval', (array) $attributes['includedCategories'] )
+// Post da includere: se non vuoto, ha priorita' assoluta su "escludi" (vedi piu' sotto).
+$included_posts = isset( $attributes['includedPosts'] )
+	? array_map( 'intval', (array) $attributes['includedPosts'] )
 	: array();
 
 // Aspetto delle card: colore di sfondo, arrotondamento angoli e padding, tutti configurabili
@@ -39,8 +47,8 @@ $card_border_color     = mavida_core_sanitize_css_color( $attributes['cardBorder
 $card_border_radius    = isset( $attributes['cardBorderRadius'] ) ? max( 0, (int) $attributes['cardBorderRadius'] ) : 12;
 $card_padding          = isset( $attributes['cardPadding'] ) ? max( 0, (int) $attributes['cardPadding'] ) : 16;
 
-// Immagine di default per le categorie che non ne hanno una propria (scelta dalla media
-// library nel pannello del blocco).
+// Immagine di default per i post che non hanno un'immagine in evidenza propria (scelta dalla
+// media library nel pannello del blocco).
 $default_image_id = isset( $attributes['defaultImageId'] ) ? (int) $attributes['defaultImageId'] : 0;
 
 // CSS personalizzato per-istanza: cssInstanceId identifica in modo univoco questo blocco (dà
@@ -49,7 +57,7 @@ $default_image_id = isset( $attributes['defaultImageId'] ) ? (int) $attributes['
 $css_instance_id = isset( $attributes['cssInstanceId'] ) ? sanitize_html_class( (string) $attributes['cssInstanceId'] ) : '';
 $custom_css      = isset( $attributes['customCss'] ) ? (string) $attributes['customCss'] : '';
 
-// Tag HTML del nome categoria, colore e dimensione testo: tutti configurabili dal pannello.
+// Tag HTML del nome post, colore e dimensione testo: tutti configurabili dal pannello.
 // Il tag viene validato contro un elenco chiuso: e' l'unico modo sicuro di stamparlo
 // direttamente nel markup (esc_attr non basterebbe a impedire un tag arbitrario).
 $allowed_name_tags = array( 'h1', 'h2', 'h3', 'h4', 'div', 'span' );
@@ -62,14 +70,14 @@ $name_style     = sprintf( 'font-size:%dpx;', $name_font_size ) . ( '' !== $name
 
 // Call to action opzionale dentro ogni card: testo libero, dimensione, colori e stile
 // "pulsante". Non ha un link proprio: essendo dentro la card, eredita il click dell'intera
-// card (il link della categoria) invece di puntare a un URL esterno indicabile a parte.
+// card (il link del post) invece di puntare a un URL esterno indicabile a parte.
 // Se il testo e' vuoto, la CTA non viene renderizzata affatto.
 $cta_text = isset( $attributes['ctaText'] ) ? trim( wp_strip_all_tags( (string) $attributes['ctaText'] ) ) : '';
 
 if ( '' !== $cta_text ) {
-	$cta_is_button        = ! empty( $attributes['ctaIsButton'] );
-	$cta_font_size        = isset( $attributes['ctaFontSize'] ) ? max( 0, (int) $attributes['ctaFontSize'] ) : 16;
-	$cta_text_color       = mavida_core_sanitize_css_color( $attributes['ctaTextColor'] ?? '' );
+	$cta_is_button         = ! empty( $attributes['ctaIsButton'] );
+	$cta_font_size         = isset( $attributes['ctaFontSize'] ) ? max( 0, (int) $attributes['ctaFontSize'] ) : 16;
+	$cta_text_color        = mavida_core_sanitize_css_color( $attributes['ctaTextColor'] ?? '' );
 	$cta_background_color = mavida_core_sanitize_css_color( $attributes['ctaBackgroundColor'] ?? '' );
 
 	$cta_style = sprintf( 'font-size:%dpx;', $cta_font_size );
@@ -80,12 +88,12 @@ if ( '' !== $cta_text ) {
 		$cta_style .= sprintf( 'background-color:%s;', $cta_background_color );
 	}
 
-	$cta_classes = 'mavida-cat-grid__cta' . ( $cta_is_button ? ' mavida-cat-grid__cta--button' : '' );
+	$cta_classes = 'mavida-cpt-grid__cta' . ( $cta_is_button ? ' mavida-cpt-grid__cta--button' : '' );
 } else {
-	$cta_is_button        = false;
-	$cta_font_size        = 0;
-	$cta_text_color       = '';
-	$cta_background_color = '';
+	$cta_is_button         = false;
+	$cta_font_size         = 0;
+	$cta_text_color        = '';
+	$cta_background_color  = '';
 	$cta_style             = '';
 	$cta_classes           = '';
 }
@@ -96,16 +104,18 @@ $cache_minutes = isset( $attributes['cacheMinutes'] ) ? max( 0, (int) $attribute
 $cache_key = null;
 
 if ( $cache_minutes > 0 ) {
-	// "mavida_core_cache_version" viene incrementata dal pulsante "Svuota cache" del blocco
-	// (endpoint REST in includes/block-cache.php): cambiandola, ogni chiave calcolata in
-	// precedenza diventa automaticamente irraggiungibile, senza dover enumerare o cancellare
-	// i singoli transient esistenti (che nel frattempo scadono comunque da soli).
+	// "mavida_core_cache_version" e' la stessa option incrementata dal pulsante "Svuota cache"
+	// (endpoint REST in includes/block-cache.php) condiviso con il blocco "Griglia categorie
+	// prodotto": cambiandola, ogni chiave calcolata in precedenza da uno dei due blocchi
+	// diventa automaticamente irraggiungibile, senza dover enumerare o cancellare i singoli
+	// transient esistenti (che nel frattempo scadono comunque da soli).
 	$cache_version   = (int) get_option( 'mavida_core_cache_version', 1 );
 	$cache_signature = array(
+		$post_type,
 		$columns,
 		$mobile_columns,
-		$excluded_categories,
-		$included_categories,
+		$excluded_posts,
+		$included_posts,
 		$card_background_color,
 		$card_border_radius,
 		$card_padding,
@@ -121,7 +131,7 @@ if ( $cache_minutes > 0 ) {
 		$css_instance_id,
 		$custom_css,
 	);
-	$cache_key = 'mavida_core_grid_' . $cache_version . '_' . md5( wp_json_encode( $cache_signature ) );
+	$cache_key = 'mavida_core_cpt_grid_' . $cache_version . '_' . md5( wp_json_encode( $cache_signature ) );
 
 	$cached_html = get_transient( $cache_key );
 
@@ -131,38 +141,51 @@ if ( $cache_minutes > 0 ) {
 	}
 }
 
-if ( ! empty( $included_categories ) ) {
-	// "categorie da includere" ha priorita' assoluta su "escludi" (ignorato in questo caso).
-	// get_terms(['include' => $ids]) non garantirebbe l'ordine di $ids: si recupera un
-	// termine alla volta, nell'ordine esatto scelto in editor (FormTokenField preserva
+if ( ! empty( $included_posts ) ) {
+	// "post da includere" ha priorita' assoluta su "escludi" (ignorato in questo caso).
+	// get_posts(['post__in' => $ids]) non garantirebbe l'ordine di $ids: si recupera un
+	// post alla volta, nell'ordine esatto scelto in editor (FormTokenField preserva
 	// l'ordine di inserimento dei token).
-	$categories = array();
-	foreach ( $included_categories as $included_term_id ) {
-		$included_term = get_term( $included_term_id, 'product_cat' );
-		if ( $included_term instanceof WP_Term ) {
-			$categories[] = $included_term;
+	$posts = array();
+	foreach ( $included_posts as $included_post_id ) {
+		$included_post = get_post( $included_post_id );
+		if (
+			$included_post instanceof WP_Post
+			&& $post_type === $included_post->post_type
+			&& 'publish' === $included_post->post_status
+		) {
+			$posts[] = $included_post;
 		}
 	}
-	unset( $included_term_id, $included_term );
+	unset( $included_post_id, $included_post );
 } else {
-	$categories = mavida_core_get_product_categories( array( 'exclude' => $excluded_categories ) );
+	$posts = get_posts(
+		array(
+			'post_type'      => $post_type,
+			'post_status'    => 'publish',
+			'numberposts'    => -1,
+			'post__not_in'   => $excluded_posts,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		)
+	);
 }
 
 /**
- * Filtra l'elenco delle categorie mostrate dalla griglia, subito dopo l'estrazione da
- * database. Permette di aggiungere, rimuovere o riordinare le categorie via codice,
- * indipendentemente dalle select "categorie da includere/escludere" nell'editor. Vedi il
- * README del plugin per un esempio d'uso.
+ * Filtra l'elenco dei post mostrati dalla griglia, subito dopo l'estrazione da database.
+ * Permette di aggiungere, rimuovere o riordinare i post via codice, indipendentemente dalle
+ * select "post da includere/escludere" nell'editor. Vedi il README del plugin per un
+ * esempio d'uso analogo (blocco "Griglia categorie prodotto").
  *
- * @param WP_Term[] $categories Elenco delle categorie estratte.
+ * @param WP_Post[] $posts      Elenco dei post estratti.
  * @param array     $attributes Attributi del blocco.
  * @param WP_Block  $block      Istanza del blocco.
  */
-$categories = apply_filters( 'mavida_core_product_category_grid_categories', $categories, $attributes, $block );
+$posts = apply_filters( 'mavida_core_cpt_post_grid_posts', $posts, $attributes, $block );
 
-// Nessuna categoria da mostrare (o WooCommerce non attivo): nessun markup in pagina.
-// Anche l'esito vuoto viene messo in cache, per non ripetere la query ad ogni richiesta.
-if ( empty( $categories ) ) {
+// Nessun post da mostrare: nessun markup in pagina. Anche l'esito vuoto viene messo in
+// cache, per non ripetere la query ad ogni richiesta.
+if ( empty( $posts ) ) {
 	if ( $cache_key ) {
 		set_transient( $cache_key, '', $cache_minutes * MINUTE_IN_SECONDS );
 	}
@@ -172,7 +195,7 @@ if ( empty( $categories ) ) {
 // Colonne (desktop e mobile), colore di sfondo, arrotondamento e padding delle card,
 // passati come custom property CSS, consumate da style.scss.
 $wrapper_extra_attributes = array(
-	'class' => 'mavida-cat-grid',
+	'class' => 'mavida-cpt-grid',
 	'style' => sprintf(
 		'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-border:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
 		$columns,
@@ -187,7 +210,7 @@ $wrapper_extra_attributes = array(
 // L'id univoco serve solo da ancoraggio al CSS personalizzato: lo si aggiunge solo se serve
 // davvero, per non sporcare il markup con un id vuoto quando non c'e' CSS personalizzato.
 if ( '' !== $css_instance_id && '' !== $custom_css ) {
-	$wrapper_extra_attributes['id'] = 'mavida-cat-grid-' . $css_instance_id;
+	$wrapper_extra_attributes['id'] = 'mavida-cpt-grid-' . $css_instance_id;
 }
 
 $wrapper_attributes = get_block_wrapper_attributes( $wrapper_extra_attributes );
@@ -195,18 +218,18 @@ $wrapper_attributes = get_block_wrapper_attributes( $wrapper_extra_attributes );
 ob_start();
 ?>
 <div <?php echo $wrapper_attributes; ?>>
-	<div class="mavida-cat-grid__items">
+	<div class="mavida-cpt-grid__items">
 		<?php
-		foreach ( $categories as $category ) {
-			$term_link = get_term_link( $category );
+		foreach ( $posts as $post ) {
+			$permalink = get_permalink( $post );
 
 			// Contesto pre-calcolato: valori gia' pronti per l'output (escapati dove serve),
-			// cosi' un filtro puo' sovrascrivere una singola card (es. l'immagine di una
-			// categoria che non ne ha) senza dover rifare query.
+			// cosi' un filtro puo' sovrascrivere una singola card (es. l'immagine di un post
+			// senza immagine in evidenza) senza dover rifare query.
 			$context = array(
-				'url'        => is_wp_error( $term_link ) ? '' : esc_url( $term_link ),
-				'name'       => esc_html( $category->name ),
-				'image_html' => mavida_core_get_category_image_html( $category, 'woocommerce_thumbnail', $default_image_id ),
+				'url'        => $permalink ? esc_url( $permalink ) : '',
+				'name'       => esc_html( get_the_title( $post ) ),
+				'image_html' => mavida_core_get_post_image_html( $post, 'large', $default_image_id ),
 				'cta_html'   => '' !== $cta_text
 					? sprintf(
 						'<span class="%1$s" style="%2$s">%3$s</span>',
@@ -219,17 +242,17 @@ ob_start();
 
 			/**
 			 * Filtra il contesto di una singola card, PRIMA che il markup venga assemblato.
-			 * Utile per sovrascrivere immagine/nome/CTA di una categoria specifica senza
-			 * toccare il database. Vedi il README del plugin per un esempio d'uso.
+			 * Utile per sovrascrivere immagine/nome/CTA di un post specifico senza toccare il
+			 * database. Vedi il README del plugin per un esempio d'uso analogo.
 			 *
 			 * @param array   $context    url, name, image_html, cta_html (gia' pronti per l'output).
-			 * @param WP_Term $category   Il termine categoria corrente.
+			 * @param WP_Post $post       Il post corrente.
 			 * @param array   $attributes Attributi del blocco.
 			 */
-			$context = apply_filters( 'mavida_core_product_category_grid_item_context', $context, $category, $attributes );
+			$context = apply_filters( 'mavida_core_cpt_post_grid_item_context', $context, $post, $attributes );
 
 			$card_html = sprintf(
-				'<a class="mavida-cat-grid__item" href="%1$s"><%2$s class="mavida-cat-grid__name" style="%3$s">%4$s</%2$s>%5$s%6$s</a>',
+				'<a class="mavida-cpt-grid__item" href="%1$s"><%2$s class="mavida-cpt-grid__name" style="%3$s">%4$s</%2$s>%5$s%6$s</a>',
 				$context['url'],
 				esc_attr( $name_tag ),
 				esc_attr( $name_style ),
@@ -241,28 +264,28 @@ ob_start();
 			/**
 			 * Filtra l'HTML completo di una singola card, dopo l'assemblaggio. Permette di
 			 * sostituire, avvolgere o accodare markup all'intera card. Vedi il README del
-			 * plugin per un esempio d'uso.
+			 * plugin per un esempio d'uso analogo.
 			 *
 			 * @param string  $card_html  Markup HTML della card.
-			 * @param WP_Term $category   Il termine categoria corrente.
+			 * @param WP_Post $post       Il post corrente.
 			 * @param array   $context    Il contesto (eventualmente gia' filtrato).
 			 * @param array   $attributes Attributi del blocco.
 			 */
-			echo apply_filters( 'mavida_core_product_category_grid_item_html', $card_html, $category, $context, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
+			echo apply_filters( 'mavida_core_cpt_post_grid_item_html', $card_html, $post, $context, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
 		}
-		unset( $category, $term_link, $context, $card_html );
+		unset( $post, $permalink, $context, $card_html );
 		?>
 	</div>
 	<?php
 	/**
 	 * Filtra l'HTML stampato subito dopo la griglia di card, dentro il wrapper del blocco.
-	 * Vedi il README del plugin per un esempio d'uso (es. una CTA globale sotto la griglia).
+	 * Vedi il README del plugin per un esempio d'uso analogo (es. una CTA globale sotto la griglia).
 	 *
 	 * @param string    $html       Vuoto di default.
-	 * @param WP_Term[] $categories Le categorie mostrate.
+	 * @param WP_Post[] $posts      I post mostrati.
 	 * @param array     $attributes Attributi del blocco.
 	 */
-	echo apply_filters( 'mavida_core_product_category_grid_after_items', '', $categories, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
+	echo apply_filters( 'mavida_core_cpt_post_grid_after_items', '', $posts, $attributes ); // phpcs:ignore WordPress.Security.EscapeOutput -- responsabilita' di chi usa il filtro, vedi README
 
 	// CSS personalizzato per questa istanza (scritto nella modale "Personalizza CSS" in editor).
 	// wp_strip_all_tags() e' l'unica sanitizzazione applicata: come il CSS aggiuntivo nativo di

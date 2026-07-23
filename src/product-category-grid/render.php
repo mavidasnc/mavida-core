@@ -35,6 +35,7 @@ $included_categories = isset( $attributes['includedCategories'] )
 // Aspetto delle card: colore di sfondo, arrotondamento angoli e padding, tutti configurabili
 // dal pannello del blocco.
 $card_background_color = mavida_core_sanitize_css_color( $attributes['cardBackgroundColor'] ?? '', '#ffffff' );
+$card_border_color     = mavida_core_sanitize_css_color( $attributes['cardBorderColor'] ?? '', 'rgba(0,0,0,0.08)' );
 $card_border_radius    = isset( $attributes['cardBorderRadius'] ) ? max( 0, (int) $attributes['cardBorderRadius'] ) : 12;
 $card_padding          = isset( $attributes['cardPadding'] ) ? max( 0, (int) $attributes['cardPadding'] ) : 16;
 
@@ -173,10 +174,11 @@ if ( empty( $categories ) ) {
 $wrapper_extra_attributes = array(
 	'class' => 'mavida-cat-grid',
 	'style' => sprintf(
-		'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
+		'--mv-columns:%d;--mv-columns-mobile:%d;--mv-card-bg:%s;--mv-card-border:%s;--mv-card-radius:%dpx;--mv-card-padding:%dpx;',
 		$columns,
 		$mobile_columns,
 		$card_background_color,
+		$card_border_color,
 		$card_border_radius,
 		$card_padding
 	),

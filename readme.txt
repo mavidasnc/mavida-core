@@ -1,10 +1,10 @@
 === Mavida Core ===
 Contributors: mavida
-Tags: woocommerce, gutenberg, block, categories, menu
+Tags: woocommerce, gutenberg, block, categories, menu, cpt
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,6 +16,9 @@ Mavida Core aggiunge al sito:
 
 * Un blocco Gutenberg dinamico che mostra una griglia delle categorie prodotto WooCommerce (nome e immagine
   di categoria gestita da Blocksy), con numero di colonne e categorie escluse configurabili.
+* Un blocco Gutenberg dinamico analogo che mostra una griglia dei post di un tipo di contenuto (CPT) a
+  scelta (nome e immagine in evidenza del post), con le stesse opzioni di aspetto, CTA, cache e CSS
+  personalizzato del blocco categorie.
 * Un sistema che inietta automaticamente l'elenco delle categorie prodotto come sottovoci di una voce
   del menu di navigazione, identificata tramite una classe CSS impostabile in una pagina di opzioni dedicata.
 * Aggiornamenti automatici del plugin direttamente dal repository GitHub pubblico.
@@ -27,6 +30,9 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.10.0 =
+* Nuovo blocco Gutenberg "Griglia post per tipo di contenuto": analogo alla griglia categorie prodotto, ma su un CPT a scelta invece che su product_cat (card = post, con titolo, immagine in evidenza, post da includere/escludere, aspetto card, CTA, cache e CSS personalizzato).
 
 = 1.9.0 =
 * Nuova tab "Opzioni" nella pagina impostazioni (Bacheca > Mavida Core), con la spunta "Visualizza colonne extra su prodotti" (disattivata di default) per mostrare o nascondere le colonne "Codice Marelli" e "Codice OE" nell'elenco prodotti di Bacheca.

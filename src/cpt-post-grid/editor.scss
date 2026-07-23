@@ -1,0 +1,9 @@
+/**
+ * Stili applicati solo nell'editor (proprieta' "editorStyle" in block.json).
+ * L'anteprima del blocco e' delegata a ServerSideRender: qui non serve altro
+ * oltre a un minimo di spaziatura per il pannello nell'iframe dell'editor.
+ */
+
+.wp-block-mavida-core-cpt-post-grid {
+	min-height: 2rem;
+}
