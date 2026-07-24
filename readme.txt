@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu, cpt
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.10.0
+Stable tag: 1.10.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,9 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.10.1 =
+* Fix: il colore del bordo card (e in generale ogni modifica al colore di sfondo/bordo) non veniva mai riflesso in frontend perche' la cache del blocco calcolava la chiave senza considerare il colore del bordo, servendo sempre l'HTML della prima combinazione generata.
 
 = 1.10.0 =
 * Nuovo blocco Gutenberg "Griglia post per tipo di contenuto": analogo alla griglia categorie prodotto, ma su un CPT a scelta invece che su product_cat (card = post, con titolo, immagine in evidenza, post da includere/escludere, aspetto card, CTA, cache e CSS personalizzato).

@@ -107,6 +107,7 @@ if ( $cache_minutes > 0 ) {
 		$excluded_categories,
 		$included_categories,
 		$card_background_color,
+		$card_border_color,
 		$card_border_radius,
 		$card_padding,
 		$name_tag,

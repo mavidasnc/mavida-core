@@ -5,6 +5,18 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.10.1] - 2026-07-23
+
+### Fixed
+- Il colore del bordo card (attributo `cardBorderColor` introdotto in 1.10.0) non veniva mai
+  riflesso in frontend/preview: la firma della cache del blocco (transient con TTL configurabile)
+  non includeva questo attributo tra i valori che compongono la chiave, quindi cambiare il colore
+  del bordo non invalidava la cache e continuava a servire l'HTML della prima combinazione
+  generata (bordo sempre grigio di default). Corretto in entrambi i blocchi griglia
+  (`product-category-grid` e `cpt-post-grid`).
+
+[1.10.1]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.10.1
+
 ## [1.10.0] - 2026-07-23
 
 ### Added
