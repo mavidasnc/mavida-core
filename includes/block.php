@@ -1,7 +1,7 @@
 <?php
 /**
- * Registrazione dei blocchi Gutenberg del plugin: "Griglia categorie prodotto" e
- * "Griglia post per tipo di contenuto".
+ * Registrazione dei blocchi Gutenberg del plugin: "Griglia categorie prodotto",
+ * "Griglia post per tipo di contenuto" e "Griglia Tassonomia".
  *
  * @package Mavida_Core
  */
@@ -25,6 +25,10 @@ if ( ! function_exists( 'mavida_core_register_blocks' ) ) {
 		// Il blocco "Griglia post per tipo di contenuto" lavora sui CPT nativi di WordPress:
 		// nessuna dipendenza da WooCommerce, sempre disponibile.
 		register_block_type( MAVIDA_CORE_PATH . 'build/cpt-post-grid' );
+
+		// Il blocco "Griglia Tassonomia" lavora su qualunque tassonomia pubblica del sito:
+		// nessuna dipendenza da WooCommerce, sempre disponibile.
+		register_block_type( MAVIDA_CORE_PATH . 'build/taxonomy-term-grid' );
 	}
 }
 add_action( 'init', 'mavida_core_register_blocks' );

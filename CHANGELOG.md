@@ -5,6 +5,25 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato e' basato su [Keep a Changelog](https://keepachangelog.com/it/1.1.0/)
 e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/it/).
 
+## [1.11.0] - 2026-07-24
+
+### Added
+- Nuovo blocco Gutenberg dinamico "Griglia Tassonomia" (`mavida-core/taxonomy-term-grid`): analogo
+  alla "Griglia categorie prodotto", ma con la tassonomia selezionabile nel pannello (tutte le
+  tassonomie pubbliche del sito, incluse `category`, `post_tag` e quelle custom gestite da CPT UI)
+  invece di `product_cat` fissa. Ogni card corrisponde a un termine (nome, permalink d'archivio e
+  immagine, con la stessa logica di fallback della griglia categorie ma senza il placeholder
+  WooCommerce). Stesse opzioni delle altre griglie: termini da includere/escludere (con priorità
+  dell'inclusione e ordine preservato), colonne desktop/mobile, aspetto card, testo e call to action
+  per card, immagine di default, cache con TTL configurabile e pulsante "Svuota cache" (condiviso
+  con gli altri blocchi), CSS personalizzato per singola istanza. Nessuna dipendenza da WooCommerce.
+- Link "Controlla aggiornamenti" nella riga del plugin in Bacheca > Plugin (accanto a
+  "Impostazioni | Disattiva"): forza un controllo immediato della release GitHub (stessa funzione
+  usata dal pulsante nella tab Aggiornamenti) e ricarica la pagina con una notice di conferma,
+  riportando lo scroll sulla riga del plugin.
+
+[1.11.0]: https://github.com/mavidasnc/mavida-core/releases/tag/v1.11.0
+
 ## [1.10.1] - 2026-07-23
 
 ### Fixed

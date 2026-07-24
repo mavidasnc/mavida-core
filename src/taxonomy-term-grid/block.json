@@ -1,0 +1,121 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "mavida-core/taxonomy-term-grid",
+	"version": "1.11.0",
+	"title": "Griglia Tassonomia",
+	"category": "widgets",
+	"icon": "grid-view",
+	"description": "Griglia dei termini di una tassonomia a scelta: nome in alto e immagine sotto, con colonne, esclusioni, aspetto card e call to action per card configurabili.",
+	"keywords": [ "tassonomia", "termini", "categorie", "griglia" ],
+	"textdomain": "mavida-core",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"spacing": {
+			"margin": true,
+			"padding": true
+		}
+	},
+	"attributes": {
+		"taxonomy": {
+			"type": "string",
+			"default": ""
+		},
+		"columns": {
+			"type": "number",
+			"default": 4
+		},
+		"mobileColumns": {
+			"type": "number",
+			"default": 2
+		},
+		"excludedTerms": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "number"
+			}
+		},
+		"includedTerms": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "number"
+			}
+		},
+		"cacheMinutes": {
+			"type": "number",
+			"default": 60
+		},
+		"cardBackgroundColor": {
+			"type": "string",
+			"default": "#ffffff"
+		},
+		"cardBorderColor": {
+			"type": "string",
+			"default": "rgba(0,0,0,0.08)"
+		},
+		"cardBorderRadius": {
+			"type": "number",
+			"default": 12
+		},
+		"cardPadding": {
+			"type": "number",
+			"default": 16
+		},
+		"nameTagName": {
+			"type": "string",
+			"default": "span"
+		},
+		"nameColor": {
+			"type": "string",
+			"default": ""
+		},
+		"nameFontSize": {
+			"type": "number",
+			"default": 16
+		},
+		"ctaText": {
+			"type": "string",
+			"default": ""
+		},
+		"ctaIsButton": {
+			"type": "boolean",
+			"default": true
+		},
+		"ctaTextColor": {
+			"type": "string",
+			"default": ""
+		},
+		"ctaBackgroundColor": {
+			"type": "string",
+			"default": ""
+		},
+		"ctaFontSize": {
+			"type": "number",
+			"default": 16
+		},
+		"defaultImageId": {
+			"type": "number",
+			"default": 0
+		},
+		"customCss": {
+			"type": "string",
+			"default": ""
+		},
+		"cssInstanceId": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"example": {
+		"attributes": {
+			"columns": 4
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

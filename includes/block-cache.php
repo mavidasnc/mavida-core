@@ -1,8 +1,9 @@
 <?php
 /**
- * Invalidazione della cache del blocco "Griglia categorie prodotto" (vedi
- * src/product-category-grid/render.php), tramite un endpoint REST richiamato dal
- * pulsante "Svuota cache" nel pannello del blocco.
+ * Invalidazione della cache dei blocchi griglia del plugin ("Griglia categorie prodotto",
+ * "Griglia post per tipo di contenuto", "Griglia Tassonomia" — tutti leggono la stessa
+ * option "mavida_core_cache_version" nella propria firma di cache), tramite un endpoint
+ * REST richiamato dal pulsante "Svuota cache" nel pannello di ciascun blocco.
  *
  * @package Mavida_Core
  */

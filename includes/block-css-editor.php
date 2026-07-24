@@ -2,7 +2,8 @@
 /**
  * Carica CodeMirror (già incluso in WordPress core, lo stesso usato da Aspetto > Personalizza >
  * CSS aggiuntivo) nell'editor a blocchi, per l'evidenziazione sintattica nella modale
- * "Personalizza CSS" del blocco "Griglia categorie prodotto" (vedi src/product-category-grid/edit.js).
+ * "Personalizza CSS" condivisa da tutti i blocchi griglia del plugin (product-category-grid,
+ * cpt-post-grid, taxonomy-term-grid).
  *
  * @package Mavida_Core
  */

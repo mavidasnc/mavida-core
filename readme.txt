@@ -4,7 +4,7 @@ Tags: woocommerce, gutenberg, block, categories, menu, cpt
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.10.1
+Stable tag: 1.11.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,9 @@ Mavida Core aggiunge al sito:
 * Un blocco Gutenberg dinamico analogo che mostra una griglia dei post di un tipo di contenuto (CPT) a
   scelta (nome e immagine in evidenza del post), con le stesse opzioni di aspetto, CTA, cache e CSS
   personalizzato del blocco categorie.
+* Un blocco Gutenberg dinamico analogo che mostra una griglia dei termini di una tassonomia a scelta
+  (qualunque tassonomia pubblica del sito), con le stesse opzioni di aspetto, CTA, cache e CSS
+  personalizzato degli altri due blocchi.
 * Un sistema che inietta automaticamente l'elenco delle categorie prodotto come sottovoci di una voce
   del menu di navigazione, identificata tramite una classe CSS impostabile in una pagina di opzioni dedicata.
 * Aggiornamenti automatici del plugin direttamente dal repository GitHub pubblico.
@@ -30,6 +33,10 @@ Mavida Core aggiunge al sito:
 3. Vai in "Mavida Core" nel menu di amministrazione per impostare la classe CSS del menu dinamico.
 
 == Changelog ==
+
+= 1.11.0 =
+* Nuovo blocco Gutenberg "Griglia Tassonomia": analogo alla griglia categorie prodotto, ma con la tassonomia selezionabile (tutte le tassonomie pubbliche del sito) invece di product_cat fissa. Card = termine, con nome, permalink d'archivio e immagine (stessa logica di fallback della griglia categorie, senza placeholder WooCommerce).
+* Nuovo link "Controlla aggiornamenti" nella riga del plugin in Bacheca > Plugin: forza un controllo immediato della release GitHub e ricarica la pagina con una notice di conferma.
 
 = 1.10.1 =
 * Fix: il colore del bordo card (e in generale ogni modifica al colore di sfondo/bordo) non veniva mai riflesso in frontend perche' la cache del blocco calcolava la chiave senza considerare il colore del bordo, servendo sempre l'HTML della prima combinazione generata.

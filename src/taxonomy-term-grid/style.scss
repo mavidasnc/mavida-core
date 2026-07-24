@@ -1,0 +1,76 @@
+/**
+ * Stili applicati sia in frontend sia in editor (proprieta' "style" in block.json).
+ */
+
+.mavida-tax-grid {
+	&__items {
+		display: grid;
+		grid-template-columns: repeat( var( --mv-columns, 4 ), minmax( 0, 1fr ) );
+		gap: 1rem;
+
+		// Sotto i 782px (breakpoint tablet standard di WordPress) si usa il numero di
+		// colonne mobile scelto nell'editor, indipendente da quello desktop.
+		@media ( max-width: 782px ) {
+			grid-template-columns: repeat( var( --mv-columns-mobile, 2 ), minmax( 0, 1fr ) );
+		}
+	}
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		text-decoration: none;
+		color: inherit;
+		background: var( --mv-card-bg, #fff );
+		border: 1px solid var( --mv-card-border, rgba( 0, 0, 0, 0.08 ) );
+		border-radius: var( --mv-card-radius, 12px );
+		padding: var( --mv-card-padding, 1rem );
+		// Piccola animazione al passaggio del mouse (sollevamento + ombra), coerente con
+		// il pattern usato per le card categoria/post delle altre griglie del plugin.
+		transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+
+		&:hover {
+			transform: translateY( -3px );
+			box-shadow: 0 6px 16px rgba( 0, 0, 0, 0.08 ), 0 20px 50px rgba( 0, 0, 0, 0.06 );
+			border-color: transparent;
+		}
+	}
+
+	// Il tag HTML effettivo (h1-h4/div/span) e' scelto dall'utente in editor; qui si stila
+	// solo per classe, cosi' il markup resta coerente qualunque sia il tag scelto.
+	&__name {
+		display: block;
+		font-weight: 600;
+		text-align: center;
+		margin: 0;
+	}
+
+	img {
+		width: 100%;
+		height: auto;
+		display: block;
+		border-radius: calc( var( --mv-card-radius, 12px ) - 4px );
+	}
+
+	// CTA dentro la card: nessun link proprio, eredita il click dell'intera card. Con
+	// align-self:center non si allarga a tutta la larghezza della card (il genitore
+	// &__item ha display:flex; align-items e' stretch di default).
+	&__cta {
+		display: inline-block;
+		align-self: center;
+		margin-top: 0.25rem;
+		color: inherit;
+
+		&--button {
+			padding: 0.5rem 1.25rem;
+			border-radius: var( --mv-card-radius, 12px );
+			background: #1a1a1a;
+			color: #fff;
+			transition: filter 0.2s ease;
+
+			.mavida-tax-grid__item:hover & {
+				filter: brightness( 0.9 );
+			}
+		}
+	}
+}

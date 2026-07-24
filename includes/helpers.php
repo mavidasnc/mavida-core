@@ -125,6 +125,68 @@ if ( ! function_exists( 'mavida_core_get_category_image_html' ) ) {
 	}
 }
 
+if ( ! function_exists( 'mavida_core_get_term_image_html' ) ) {
+	/**
+	 * Restituisce il markup <img> dell'immagine di un termine (blocco "Griglia Tassonomia"),
+	 * generica per qualunque tassonomia (a differenza di mavida_core_get_category_image_html,
+	 * specifica per product_cat): stessa logica di fallback, ma senza il placeholder
+	 * WooCommerce, che non ha senso per tassonomie non legate ai prodotti.
+	 * 1) term meta standard WooCommerce "thumbnail_id" (riusato anche da tassonomie non-WC,
+	 *    se un plugin/tema lo popola con lo stesso meta key);
+	 * 2) fallback storico Blocksy dentro "blocksy_taxonomy_meta_options" (chiavi image/icon_image);
+	 * 3) immagine di default configurata nel pannello del blocco (se impostata).
+	 *
+	 * @param WP_Term $term                  Il termine di cui recuperare l'immagine.
+	 * @param string  $size                  Nome della dimensione immagine da usare.
+	 * @param int     $default_attachment_id ID allegato da usare se il termine non ha
+	 *                                        un'immagine propria (0 = nessuna immagine di default).
+	 * @return string Markup HTML gia' pronto per l'output (le funzioni WP usate escapano gia'),
+	 *                oppure stringa vuota se nessuna immagine e' disponibile.
+	 */
+	function mavida_core_get_term_image_html( WP_Term $term, $size = 'large', $default_attachment_id = 0 ) {
+		$attachment_id = (int) get_term_meta( $term->term_id, 'thumbnail_id', true );
+
+		// Fallback: vecchie installazioni Blocksy possono avere l'immagine solo dentro le opzioni del termine.
+		if ( ! $attachment_id ) {
+			$blocksy_options = get_term_meta( $term->term_id, 'blocksy_taxonomy_meta_options', true );
+
+			if ( is_array( $blocksy_options ) ) {
+				$maybe_image = isset( $blocksy_options['image'] ) ? $blocksy_options['image'] : ( $blocksy_options['icon_image'] ?? null );
+
+				if ( is_array( $maybe_image ) && ! empty( $maybe_image['attachment_id'] ) ) {
+					$attachment_id = (int) $maybe_image['attachment_id'];
+				}
+			}
+		}
+
+		// Nessuna immagine propria: usa quella di default configurata nel blocco, se presente.
+		if ( ! $attachment_id && $default_attachment_id > 0 ) {
+			$attachment_id = $default_attachment_id;
+		}
+
+		if ( $attachment_id ) {
+			$image_html = wp_get_attachment_image(
+				$attachment_id,
+				$size,
+				false,
+				array(
+					'loading' => 'lazy',
+					'alt'     => $term->name,
+				)
+			);
+
+			if ( $image_html ) {
+				return $image_html;
+			}
+		}
+
+		// Nessuna immagine trovata: a differenza del blocco categorie prodotto non c'e' un
+		// placeholder generico da usare (wc_placeholder_img() e' specifico WooCommerce), quindi
+		// la card resta semplicemente senza immagine.
+		return '';
+	}
+}
+
 if ( ! function_exists( 'mavida_core_get_post_image_html' ) ) {
 	/**
 	 * Restituisce il markup <img> dell'immagine di un post (blocco "Griglia post per tipo
